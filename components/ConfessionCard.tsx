@@ -75,32 +75,54 @@ export default function ConfessionCard({ confession, currentUserId, onUpdate }: 
 
   if (confession.is_hidden) {
     return (
-      <div className="bg-gray-100 rounded-xl p-6 text-center text-gray-500">
-        <p>This confession has been hidden by moderators.</p>
+      <div className="glass-strong rounded-2xl p-8 opacity-75">
+        <div className="text-center">
+          <div className="text-5xl mb-4 animate-pulse">🔒</div>
+          <p className="font-semibold text-lg" style={{ color: 'var(--text-secondary)' }}>
+            This confession has been hidden by moderators.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="glass rounded-2xl p-6 hover:bg-white/30 transition-all duration-300 group">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <span className="text-white font-medium text-sm bg-gradient-to-r from-indigo-500/30 to-purple-500/30 px-4 py-2 rounded-full border border-white/20 backdrop-blur-sm">
-            {formatDate(confession.created_at)}
-          </span>
-          <span className="text-white/60 text-sm font-medium">Anonymous</span>
+    <div className="glass rounded-2xl p-6 group hover:glass-strong transition-all duration-300 animate-slideInUp">
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+              <span className="text-white text-lg">🎭</span>
+            </div>
+            <div>
+              <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Anonymous</p>
+              <span 
+                className="text-sm font-medium px-3 py-1 rounded-full"
+                style={{ 
+                  background: 'linear-gradient(135deg, var(--primary-500), var(--secondary-500))',
+                  color: 'var(--text-inverse)'
+                }}
+              >
+                {formatDate(confession.created_at)}
+              </span>
+            </div>
+          </div>
         </div>
         <button
           onClick={() => setShowReportModal(true)}
-          className="text-white/50 hover:text-red-400 transition-colors p-2 rounded-full hover:bg-white/10"
+          className="p-3 rounded-xl glass hover:glass-strong transition-all duration-300 group/report"
+          style={{ color: 'var(--text-tertiary)' }}
           title="Report this confession"
         >
-          🚩
+          <span className="group-hover/report:scale-110 transition-transform duration-300 inline-block text-lg">🚩</span>
         </button>
       </div>
 
-      <div className="mb-6">
-        <p className="text-white leading-relaxed whitespace-pre-wrap text-lg">
+      <div className="mb-8">
+        <p 
+          className="leading-relaxed whitespace-pre-wrap text-lg font-medium"
+          style={{ color: 'var(--text-primary)' }}
+        >
           {confession.content}
         </p>
       </div>
@@ -119,11 +141,18 @@ export default function ConfessionCard({ confession, currentUserId, onUpdate }: 
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setShowComments(!showComments)}
-            className="text-white/80 hover:text-white transition-colors text-sm font-medium bg-white/10 px-4 py-2 rounded-full hover:bg-white/20 flex items-center space-x-2"
+            className="glass px-4 py-3 rounded-xl hover:glass-strong transition-all duration-300 flex items-center space-x-3 font-medium"
+            style={{ color: 'var(--text-primary)' }}
           >
-            <span>💬</span>
-            <span>{showComments ? 'Hide' : 'Comments'}</span>
-            <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
+            <span className="text-lg">💬</span>
+            <span>{showComments ? 'Hide Comments' : 'Comments'}</span>
+            <span 
+              className="text-sm px-2 py-1 rounded-full font-bold"
+              style={{ 
+                background: 'linear-gradient(135deg, var(--accent-500), var(--accent-600))',
+                color: 'var(--text-inverse)'
+              }}
+            >
               {commentCount}
             </span>
           </button>
@@ -131,11 +160,13 @@ export default function ConfessionCard({ confession, currentUserId, onUpdate }: 
       </div>
 
       {showComments && (
-        <div className="mt-6 pt-6 border-t border-white/20 animate-fadeIn">
-          <CommentSection
-            confessionId={confession.id}
-            onCommentAdded={fetchCommentCount}
-          />
+        <div className="mt-8 pt-6" style={{ borderTop: `1px solid var(--border-primary)` }}>
+          <div className="animate-slideInUp">
+            <CommentSection
+              confessionId={confession.id}
+              onCommentAdded={fetchCommentCount}
+            />
+          </div>
         </div>
       )}
 
@@ -145,12 +176,15 @@ export default function ConfessionCard({ confession, currentUserId, onUpdate }: 
           onClose={() => setShowReportModal(false)}
           onSuccess={() => {
             setShowReportModal(false);
-            // Show success toast
+            // Show modern success toast
             const toast = document.createElement('div');
-            toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            toast.textContent = 'Report submitted successfully';
+            toast.className = 'fixed top-6 right-6 glass-strong text-green-400 px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center space-x-3 animate-slideInRight';
+            toast.innerHTML = '<span class="text-xl">✅</span><span class="font-semibold">Report submitted successfully</span>';
             document.body.appendChild(toast);
-            setTimeout(() => document.body.removeChild(toast), 3000);
+            setTimeout(() => {
+              toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+              setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
           }}
         />
       )}

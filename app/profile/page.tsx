@@ -103,8 +103,11 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-white/30 border-t-white"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="glass-strong p-8 rounded-2xl">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-transparent border-t-current mx-auto" style={{ color: 'var(--primary-500)' }}></div>
+          <p className="mt-4 text-center" style={{ color: 'var(--text-secondary)' }}>Loading...</p>
+        </div>
       </div>
     );
   }
@@ -114,89 +117,114 @@ export default function ProfilePage() {
       <Header user={user} onLogout={handleLogout} />
       
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="glass rounded-2xl p-8 backdrop-blur-lg">
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-3xl text-white font-bold">
+        <div className="glass-strong rounded-3xl p-8 animate-slideInUp">
+          <div className="text-center mb-10">
+            <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+              <span className="text-4xl text-white font-bold">
                 {user.full_name?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Profile Settings</h1>
-            <p className="text-white/70">Manage your account information</p>
+            <h1 className="text-4xl font-bold gradient-text mb-3">Profile Settings</h1>
+            <p className="text-xl" style={{ color: 'var(--text-secondary)' }}>
+              Manage your account information
+            </p>
           </div>
 
-          <form onSubmit={handleUpdateProfile} className="space-y-6">
-            <div>
-              <label className="block text-white font-medium mb-2">Full Name</label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all"
-                placeholder="Enter your full name"
-                required
-              />
+          <form onSubmit={handleUpdateProfile} className="space-y-8">
+            <div className="grid gap-6">
+              <div>
+                <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  className="input-modern w-full text-lg"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={user.email}
+                  disabled
+                  className="input-modern w-full text-lg opacity-60 cursor-not-allowed"
+                />
+                <p className="text-sm mt-2 flex items-center space-x-2" style={{ color: 'var(--text-tertiary)' }}>
+                  <span>🔒</span>
+                  <span>Email cannot be changed</span>
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
+                  Student ID
+                </label>
+                <input
+                  type="text"
+                  value={user.student_id}
+                  disabled
+                  className="input-modern w-full text-lg opacity-60 cursor-not-allowed"
+                />
+                <p className="text-sm mt-2 flex items-center space-x-2" style={{ color: 'var(--text-tertiary)' }}>
+                  <span>🔒</span>
+                  <span>Student ID cannot be changed</span>
+                </p>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-white font-medium mb-2">Email</label>
-              <input
-                type="email"
-                value={user.email}
-                disabled
-                className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white/70 cursor-not-allowed"
-              />
-              <p className="text-white/60 text-sm mt-1">Email cannot be changed</p>
-            </div>
-
-            <div>
-              <label className="block text-white font-medium mb-2">Student ID</label>
-              <input
-                type="text"
-                value={user.student_id}
-                disabled
-                className="w-full p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white/70 cursor-not-allowed"
-              />
-              <p className="text-white/60 text-sm mt-1">Student ID cannot be changed</p>
-            </div>
-
-            <div className="border-t border-white/20 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Change Password</h3>
+            <div className="pt-8" style={{ borderTop: `2px solid var(--border-primary)` }}>
+              <h3 className="text-2xl font-bold gradient-text mb-6 flex items-center space-x-3">
+                <span>🔐</span>
+                <span>Change Password</span>
+              </h3>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-white font-medium mb-2">Current Password</label>
+                  <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
+                    Current Password
+                  </label>
                   <input
                     type="password"
                     name="currentPassword"
                     value={formData.currentPassword}
                     onChange={handleInputChange}
-                    className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all"
+                    className="input-modern w-full text-lg"
                     placeholder="Enter current password"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-medium mb-2">New Password</label>
+                  <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
+                    New Password
+                  </label>
                   <input
                     type="password"
                     name="newPassword"
                     value={formData.newPassword}
                     onChange={handleInputChange}
-                    className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all"
+                    className="input-modern w-full text-lg"
                     placeholder="Enter new password"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white font-medium mb-2">Confirm New Password</label>
+                  <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
+                    Confirm New Password
+                  </label>
                   <input
                     type="password"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all"
+                    className="input-modern w-full text-lg"
                     placeholder="Confirm new password"
                   />
                 </div>
@@ -204,19 +232,19 @@ export default function ProfilePage() {
             </div>
 
             {error && (
-              <div className="p-4 bg-red-500/20 border border-red-500/30 text-red-200 rounded-xl backdrop-blur-sm">
-                <div className="flex items-center space-x-2">
-                  <span>⚠️</span>
-                  <span>{error}</span>
+              <div className="glass p-4 rounded-2xl border-2 border-red-500/30 animate-slideInUp">
+                <div className="flex items-center space-x-3 text-red-400">
+                  <span className="text-xl">⚠️</span>
+                  <span className="font-semibold">{error}</span>
                 </div>
               </div>
             )}
 
             {success && (
-              <div className="p-4 bg-green-500/20 border border-green-500/30 text-green-200 rounded-xl backdrop-blur-sm">
-                <div className="flex items-center space-x-2">
-                  <span>✅</span>
-                  <span>{success}</span>
+              <div className="glass p-4 rounded-2xl border-2 border-green-500/30 animate-slideInUp">
+                <div className="flex items-center space-x-3 text-green-400">
+                  <span className="text-xl">✅</span>
+                  <span className="font-semibold">{success}</span>
                 </div>
               </div>
             )}
@@ -224,15 +252,18 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-4 px-6 rounded-xl font-medium hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+              className="btn-primary w-full py-4 px-8 text-lg font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {loading ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-3 border-transparent border-t-current"></div>
                   <span>Updating...</span>
                 </div>
               ) : (
-                <span>Update Profile</span>
+                <div className="flex items-center justify-center space-x-3">
+                  <span className="text-xl">💾</span>
+                  <span>Update Profile</span>
+                </div>
               )}
             </button>
           </form>

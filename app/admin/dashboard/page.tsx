@@ -45,125 +45,171 @@ export default function AdminDashboard() {
     }
   };
 
-  const StatCard = ({ title, value, icon, color }: {
+  const StatCard = ({ title, value, icon, gradient }: {
     title: string;
     value: number;
     icon: string;
-    color: string;
+    gradient: string;
   }) => (
-    <div className={`${color} rounded-2xl p-6 text-white backdrop-blur-sm border border-white/10`}>
+    <div className="glass rounded-3xl p-6 hover:glass-strong transition-all duration-300 group animate-slideInUp">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm opacity-90">{title}</p>
-          <p className="text-3xl font-bold">{value}</p>
+          <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>{title}</p>
+          <p className="text-4xl font-bold gradient-text">{value}</p>
         </div>
-        <div className="text-4xl opacity-80">
-          {icon}
+        <div className={`w-16 h-16 ${gradient} rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300`}>
+          <span className="text-2xl">{icon}</span>
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="flex min-h-screen">
       <AdminSidebar />
       
       <div className="flex-1 ml-64">
         <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Admin Dashboard</h1>
-            <p className="text-white/70 text-lg">Monitor and manage campus confession activity</p>
+          <div className="mb-10 animate-slideInUp">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl">
+                <span className="text-2xl">📊</span>
+              </div>
+              <div>
+                <h1 className="text-5xl font-bold gradient-text">Admin Dashboard</h1>
+                <p className="text-xl mt-2" style={{ color: 'var(--text-secondary)' }}>
+                  Monitor and manage campus confession activity
+                </p>
+              </div>
+            </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="text-center py-16">
+              <div className="glass-strong p-12 rounded-3xl max-w-md mx-auto">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-transparent border-t-current mx-auto mb-4" style={{ color: 'var(--primary-500)' }}></div>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading dashboard...</p>
+              </div>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
                 <StatCard
                   title="Total Users"
                   value={stats.totalUsers}
                   icon="👥"
-                  color="bg-gradient-to-br from-purple-500 to-purple-600"
+                  gradient="bg-gradient-to-br from-purple-500 to-purple-600"
                 />
                 <StatCard
                   title="Total Confessions"
                   value={stats.totalConfessions}
                   icon="💭"
-                  color="bg-gradient-to-br from-blue-500 to-blue-600"
+                  gradient="bg-gradient-to-br from-blue-500 to-blue-600"
                 />
                 <StatCard
                   title="Pending Reports"
                   value={stats.totalReports}
                   icon="🚩"
-                  color="bg-gradient-to-br from-red-500 to-red-600"
+                  gradient="bg-gradient-to-br from-red-500 to-red-600"
                 />
                 <StatCard
                   title="Total Comments"
                   value={stats.totalComments}
                   icon="💬"
-                  color="bg-gradient-to-br from-green-500 to-green-600"
+                  gradient="bg-gradient-to-br from-green-500 to-green-600"
                 />
                 <StatCard
                   title="Hidden Posts"
                   value={stats.hiddenConfessions}
                   icon="👁️"
-                  color="bg-gradient-to-br from-gray-500 to-gray-600"
+                  gradient="bg-gradient-to-br from-gray-500 to-gray-600"
                 />
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
-                  <h3 className="text-lg font-bold mb-4 text-white">Recent Activity</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-3 bg-blue-500/20 rounded-xl border border-blue-500/30">
-                      <span className="text-blue-300 text-xl">💭</span>
-                      <div>
-                        <p className="text-sm font-medium text-white">New confession posted</p>
-                        <p className="text-xs text-gray-300">2 minutes ago</p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="glass-strong rounded-3xl p-8 animate-slideInUp" style={{ animationDelay: '0.2s' }}>
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center">
+                      <span className="text-xl">📈</span>
+                    </div>
+                    <h3 className="text-2xl font-bold gradient-text">Recent Activity</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="glass p-4 rounded-2xl hover:glass-strong transition-all duration-300">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
+                          <span className="text-xl">💭</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>New confession posted</p>
+                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>2 minutes ago</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3 p-3 bg-red-500/20 rounded-xl border border-red-500/30">
-                      <span className="text-red-300 text-xl">🚩</span>
-                      <div>
-                        <p className="text-sm font-medium text-white">Content reported</p>
-                        <p className="text-xs text-gray-300">15 minutes ago</p>
+                    <div className="glass p-4 rounded-2xl hover:glass-strong transition-all duration-300">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center">
+                          <span className="text-xl">🚩</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Content reported</p>
+                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>15 minutes ago</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3 p-3 bg-green-500/20 rounded-xl border border-green-500/30">
-                      <span className="text-green-300 text-xl">💬</span>
-                      <div>
-                        <p className="text-sm font-medium text-white">New comment added</p>
-                        <p className="text-xs text-gray-300">1 hour ago</p>
+                    <div className="glass p-4 rounded-2xl hover:glass-strong transition-all duration-300">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center">
+                          <span className="text-xl">💬</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>New comment added</p>
+                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>1 hour ago</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
-                  <h3 className="text-lg font-bold mb-4 text-white">Quick Actions</h3>
-                  <div className="space-y-3">
-                    <button className="w-full flex items-center space-x-3 p-3 bg-red-500/20 hover:bg-red-500/30 rounded-xl border border-red-500/30 transition text-left">
-                      <span className="text-red-300 text-xl">🚩</span>
-                      <div>
-                        <p className="font-medium text-white">Review Reports</p>
-                        <p className="text-sm text-gray-300">Check flagged content</p>
+                <div className="glass-strong rounded-3xl p-8 animate-slideInUp" style={{ animationDelay: '0.4s' }}>
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center">
+                      <span className="text-xl">⚡</span>
+                    </div>
+                    <h3 className="text-2xl font-bold gradient-text">Quick Actions</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <button className="w-full glass p-4 rounded-2xl hover:glass-strong transition-all duration-300 text-left group">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <span className="text-xl">🚩</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Review Reports</p>
+                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Check flagged content</p>
+                        </div>
                       </div>
                     </button>
-                    <button className="w-full flex items-center space-x-3 p-3 bg-blue-500/20 hover:bg-blue-500/30 rounded-xl border border-blue-500/30 transition text-left">
-                      <span className="text-blue-300 text-xl">📊</span>
-                      <div>
-                        <p className="font-medium text-white">View Analytics</p>
-                        <p className="text-sm text-gray-300">Platform statistics</p>
+                    <button className="w-full glass p-4 rounded-2xl hover:glass-strong transition-all duration-300 text-left group">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <span className="text-xl">📊</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>View Analytics</p>
+                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Platform statistics</p>
+                        </div>
                       </div>
                     </button>
-                    <button className="w-full flex items-center space-x-3 p-3 bg-gray-500/20 hover:bg-gray-500/30 rounded-xl border border-gray-500/30 transition text-left">
-                      <span className="text-gray-300 text-xl">⚙️</span>
-                      <div>
-                        <p className="font-medium text-white">Settings</p>
-                        <p className="text-sm text-gray-300">Platform configuration</p>
+                    <button className="w-full glass p-4 rounded-2xl hover:glass-strong transition-all duration-300 text-left group">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <span className="text-xl">⚙️</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Settings</p>
+                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Platform configuration</p>
+                        </div>
                       </div>
                     </button>
                   </div>

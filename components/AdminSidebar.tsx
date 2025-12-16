@@ -46,48 +46,53 @@ export default function AdminSidebar() {
   };
 
   return (
-    <div className="w-64 bg-gradient-to-b from-slate-900 to-slate-800 shadow-2xl h-screen fixed left-0 top-0">
+    <div className="w-64 glass-strong h-screen fixed left-0 top-0 z-40" style={{ borderRight: `1px solid var(--border-primary)` }}>
       <div className="p-6">
-        <div className="flex items-center space-x-3 mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">⚡</span>
+        <div className="flex items-center space-x-4 mb-10">
+          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl">
+            <span className="text-white font-bold text-2xl">⚡</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-            <p className="text-sm text-gray-300">Campus Confessions</p>
+            <h1 className="text-2xl font-bold gradient-text">Admin Panel</h1>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Campus Confessions</p>
           </div>
         </div>
 
         {/* User Info */}
         {user && (
-          <div className="mb-6 p-4 bg-white/10 rounded-xl backdrop-blur-sm">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">
+          <div className="mb-8 glass p-4 rounded-2xl">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-white text-lg font-bold">
                   {user.full_name?.charAt(0).toUpperCase() || 'A'}
                 </span>
               </div>
               <div>
-                <p className="text-white font-medium text-sm">{user.full_name || 'Admin'}</p>
-                <p className="text-gray-300 text-xs">{user.role}</p>
+                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  {user.full_name || 'Admin'}
+                </p>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
+                  {user.role}
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        <nav className="space-y-2">
+        <nav className="space-y-3">
           {menuItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              className={`flex items-center space-x-4 px-4 py-4 rounded-2xl transition-all duration-300 font-medium group ${
                 pathname === item.href
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
-                  : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                  ? 'btn-primary shadow-xl'
+                  : 'glass hover:glass-strong'
               }`}
+              style={pathname !== item.href ? { color: 'var(--text-primary)' } : {}}
             >
-              <span className="text-lg">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
+              <span className="text-xl group-hover:scale-110 transition-transform duration-300">{item.icon}</span>
+              <span>{item.label}</span>
             </Link>
           ))}
         </nav>
@@ -96,10 +101,11 @@ export default function AdminSidebar() {
       <div className="absolute bottom-0 left-0 right-0 p-6">
         <button
           onClick={handleLogout}
-          className="flex items-center space-x-3 px-4 py-3 text-gray-300 hover:bg-red-500/20 hover:text-red-300 rounded-xl transition-all duration-200 w-full"
+          className="flex items-center space-x-4 px-4 py-4 rounded-2xl transition-all duration-300 w-full font-medium group glass hover:glass-strong hover:border-red-500/30"
+          style={{ color: 'var(--text-primary)' }}
         >
-          <span className="text-lg">🚪</span>
-          <span className="font-medium">Logout</span>
+          <span className="text-xl group-hover:scale-110 transition-transform duration-300">🚪</span>
+          <span>Logout</span>
         </button>
       </div>
     </div>

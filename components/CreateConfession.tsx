@@ -66,39 +66,49 @@ export default function CreateConfession({ onSuccess, userId }: CreateConfession
   };
 
   return (
-    <div className="glass rounded-2xl p-8 backdrop-blur-lg">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Share Your Confession</h2>
-        <p className="text-white/80">Express yourself anonymously in a safe space</p>
+    <div className="glass-strong rounded-3xl p-8 group hover:glass transition-all duration-300">
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl group-hover:scale-105 transition-transform duration-300">
+          <span className="text-2xl">✨</span>
+        </div>
+        <h2 className="text-3xl font-bold gradient-text mb-3">Share Your Confession</h2>
+        <p style={{ color: 'var(--text-secondary)' }} className="text-lg">
+          Express yourself anonymously in a safe space
+        </p>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-
-
         <div>
-          <label className="block text-white font-medium mb-3">Your confession</label>
+          <label className="block font-semibold mb-4 text-lg" style={{ color: 'var(--text-primary)' }}>
+            Your confession
+          </label>
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="What's on your mind? Share your thoughts, feelings, or experiences... Your confession is completely anonymous and safe."
-            className="w-full p-4 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/50 focus:border-white/50 transition-all h-40 resize-none"
+            className="input-modern w-full h-40 resize-none text-lg"
             maxLength={1000}
           />
-          <div className="flex justify-between items-center mt-2">
-            <div className="text-white/60 text-sm">
-              💡 Tip: Be respectful and kind to create a positive community
+          <div className="flex justify-between items-center mt-3">
+            <div className="flex items-center space-x-2" style={{ color: 'var(--text-tertiary)' }}>
+              <span className="text-lg">💡</span>
+              <span className="text-sm font-medium">Be respectful and kind to create a positive community</span>
             </div>
-            <div className={`text-sm font-medium ${content.length > 900 ? 'text-yellow-300' : 'text-white/60'}`}>
+            <div className={`text-sm font-bold px-3 py-1 rounded-full ${
+              content.length > 900 
+                ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400' 
+                : 'bg-gray-500/20'
+            }`} style={{ color: content.length > 900 ? undefined : 'var(--text-tertiary)' }}>
               {content.length}/1000
             </div>
           </div>
         </div>
 
         {error && (
-          <div className="p-4 bg-red-500/20 border border-red-500/30 text-red-200 rounded-xl backdrop-blur-sm">
-            <div className="flex items-center space-x-2">
-              <span>⚠️</span>
-              <span>{error}</span>
+          <div className="glass p-4 rounded-2xl border-2 border-red-500/30 animate-slideInUp">
+            <div className="flex items-center space-x-3 text-red-400">
+              <span className="text-xl">⚠️</span>
+              <span className="font-semibold">{error}</span>
             </div>
           </div>
         )}
@@ -106,36 +116,36 @@ export default function CreateConfession({ onSuccess, userId }: CreateConfession
         <button
           type="submit"
           disabled={submitting || !content.trim()}
-          className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-4 px-6 rounded-xl font-medium hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+          className="btn-primary w-full py-4 px-8 text-lg font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {submitting ? (
-            <div className="flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
+            <div className="flex items-center justify-center space-x-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-3 border-transparent border-t-current"></div>
               <span>Posting...</span>
             </div>
           ) : (
-            <div className="flex items-center justify-center space-x-2">
-              <span>✨</span>
+            <div className="flex items-center justify-center space-x-3">
+              <span className="text-xl">🚀</span>
               <span>Post Confession Anonymously</span>
             </div>
           )}
         </button>
       </form>
 
-      <div className="mt-6 p-4 bg-white/10 rounded-xl backdrop-blur-sm">
-        <div className="flex items-center justify-center space-x-4 text-white/80 text-sm">
-          <div className="flex items-center space-x-1">
-            <span>🔒</span>
+      <div className="mt-8 glass p-6 rounded-2xl">
+        <div className="flex items-center justify-center space-x-6 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">🔒</span>
             <span>100% Anonymous</span>
           </div>
-          <div className="w-1 h-1 bg-white/40 rounded-full"></div>
-          <div className="flex items-center space-x-1">
-            <span>🛡️</span>
+          <div className="w-2 h-2 rounded-full" style={{ background: 'var(--border-secondary)' }}></div>
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">🛡️</span>
             <span>Safe & Secure</span>
           </div>
-          <div className="w-1 h-1 bg-white/40 rounded-full"></div>
-          <div className="flex items-center space-x-1">
-            <span>❤️</span>
+          <div className="w-2 h-2 rounded-full" style={{ background: 'var(--border-secondary)' }}></div>
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">❤️</span>
             <span>Community Driven</span>
           </div>
         </div>
