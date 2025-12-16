@@ -1,6 +1,14 @@
 # Anonymous Campus Confession App
 
+[![Repository Status](https://img.shields.io/badge/Status-Live%20on%20GitHub-success)](https://github.com/Biruksahileeshete/Anonymous-Campus-Confession-App)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)](https://www.postgresql.org/)
+
 A modern, secure platform for anonymous campus confessions built with Next.js 14, TypeScript, and Neon PostgreSQL. Features a beautiful glass-morphism UI, real-time interactions, and comprehensive admin tools.
+
+> **🎉 Repository Status**: Successfully deployed to GitHub at [Biruksahileeshete/Anonymous-Campus-Confession-App](https://github.com/Biruksahileeshete/Anonymous-Campus-Confession-App)
 
 ## ✨ Key Features
 
