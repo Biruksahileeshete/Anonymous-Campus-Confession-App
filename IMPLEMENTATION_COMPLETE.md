@@ -4,10 +4,11 @@
 
 ### 🔐 Google OAuth Integration
 - **Status**: ✅ FULLY WORKING
-- **Client ID**: `[REDACTED-CLIENT-ID]`
+- **Client ID**: `[CONFIGURED VIA ENVIRONMENT VARIABLES]`
 - **Implementation**: NextAuth.js with Google Provider
 - **Database Integration**: Users automatically created on first Google sign-in
 - **Session Management**: JWT-based with role-based routing
+- **Security**: All OAuth credentials stored securely in environment variables
 
 ### 💾 Database Integration (Neon PostgreSQL)
 - **Status**: ✅ FULLY WORKING
