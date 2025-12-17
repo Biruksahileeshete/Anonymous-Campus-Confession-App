@@ -1,26 +1,36 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
 
 export default function LoadingOverlay() {
   const [isLoading, setIsLoading] = useState(false);
-  const pathname = usePathname();
+  const [currentPath, setCurrentPath] = useState('');
 
   useEffect(() => {
+    // Set initial path
+    if (typeof window !== 'undefined') {
+      setCurrentPath(window.location.pathname);
+    }
+
     let loadingTimer: NodeJS.Timeout;
+    let maxLoadingTimer: NodeJS.Timeout;
 
     const handleStart = () => {
       setIsLoading(true);
-      // Auto-hide after 500ms to prevent long loading
-      loadingTimer = setTimeout(() => {
+      
+      // Maximum loading time of 2 seconds
+      maxLoadingTimer = setTimeout(() => {
         setIsLoading(false);
-      }, 500);
+      }, 2000);
     };
 
     const handleComplete = () => {
       clearTimeout(loadingTimer);
-      setIsLoading(false);
+      clearTimeout(maxLoadingTimer);
+      // Small delay to show completion
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 100);
     };
 
     // Listen for link clicks
@@ -44,18 +54,39 @@ export default function LoadingOverlay() {
       }
     };
 
+    // Listen for page load completion
+    const handlePageLoad = () => {
+      handleComplete();
+    };
+
+    // Listen for popstate (back/forward navigation)
+    const handlePopState = () => {
+      if (typeof window !== 'undefined') {
+        const newPath = window.location.pathname;
+        if (newPath !== currentPath) {
+          setCurrentPath(newPath);
+          handleComplete();
+        }
+      }
+    };
+
     document.addEventListener('click', handleClick);
     document.addEventListener('submit', handleSubmit);
+    window.addEventListener('load', handlePageLoad);
+    window.addEventListener('popstate', handlePopState);
     
-    // Hide loading when route changes
+    // Hide loading when component mounts (page loaded successfully)
     handleComplete();
     
     return () => {
       document.removeEventListener('click', handleClick);
       document.removeEventListener('submit', handleSubmit);
+      window.removeEventListener('load', handlePageLoad);
+      window.removeEventListener('popstate', handlePopState);
       clearTimeout(loadingTimer);
+      clearTimeout(maxLoadingTimer);
     };
-  }, [pathname]);
+  }, [currentPath]);
 
   if (!isLoading) return null;
 

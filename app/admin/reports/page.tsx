@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
+import { Flag, AlertTriangle, Spam, MessageSquare, Eye, EyeOff, UserX, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface Report {
   id: string;
@@ -112,18 +113,28 @@ export default function AdminReports() {
       
       <div className="flex-1 ml-64">
         <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-aurora mb-2">Reports Management</h1>
-            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Review and manage reported content</p>
+          <div className="mb-8 animate-slideInUp">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/30">
+                <Flag className="w-8 h-8 text-white drop-shadow-lg" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-aurora">Reports Management</h1>
+                <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Review and manage reported content</p>
+              </div>
+            </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <div className="loading-aurora mx-auto"></div>
+            <div className="text-center py-16">
+              <div className="card-aurora p-12 max-w-md mx-auto">
+                <div className="loading-aurora mx-auto mb-4"></div>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading reports...</p>
+              </div>
             </div>
           ) : reports.length === 0 ? (
             <div className="card-aurora p-12 text-center">
-              <div className="text-6xl mb-4">🎉</div>
+              <CheckCircle className="w-16 h-16 mx-auto mb-4 text-emerald-500" />
               <h3 className="text-xl font-bold text-aurora mb-2">No Reports!</h3>
               <p style={{ color: 'var(--text-secondary)' }}>All content is clean. Great job, community!</p>
             </div>

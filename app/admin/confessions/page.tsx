@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
+import { MessageSquare, ThumbsUp, Laugh, Frown, Eye, EyeOff, Trash2, RotateCcw } from 'lucide-react';
 
 interface Confession {
   id: string;
@@ -88,18 +89,28 @@ export default function AdminConfessions() {
       
       <div className="flex-1 ml-64">
         <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-aurora mb-2">Confession Management</h1>
-            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Review and manage all confessions</p>
+          <div className="mb-8 animate-slideInUp">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/30">
+                <MessageSquare className="w-8 h-8 text-white drop-shadow-lg" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-aurora">Confession Management</h1>
+                <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Review and manage all confessions</p>
+              </div>
+            </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <div className="loading-aurora mx-auto"></div>
+            <div className="text-center py-16">
+              <div className="card-aurora p-12 max-w-md mx-auto">
+                <div className="loading-aurora mx-auto mb-4"></div>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading confessions...</p>
+              </div>
             </div>
           ) : confessions.length === 0 ? (
             <div className="card-aurora p-12 text-center">
-              <div className="text-6xl mb-4">📝</div>
+              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-400" />
               <h3 className="text-xl font-bold text-aurora mb-2">No Confessions Yet</h3>
               <p style={{ color: 'var(--text-secondary)' }}>Confessions will appear here once users start posting</p>
             </div>
@@ -129,22 +140,25 @@ export default function AdminConfessions() {
                       {confession.is_hidden ? (
                         <button 
                           onClick={() => handleAction('unhide_confession', confession.id)}
-                          className="px-3 py-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition text-sm"
+                          className="px-3 py-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition text-sm flex items-center gap-1"
                         >
+                          <RotateCcw className="w-4 h-4" />
                           Restore
                         </button>
                       ) : (
                         <button 
                           onClick={() => handleAction('hide_confession', confession.id)}
-                          className="px-3 py-1 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm"
+                          className="px-3 py-1 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm flex items-center gap-1"
                         >
+                          <EyeOff className="w-4 h-4" />
                           Hide
                         </button>
                       )}
                       <button 
                         onClick={() => handleAction('delete_confession', confession.id)}
-                        className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm"
+                        className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm flex items-center gap-1"
                       >
+                        <Trash2 className="w-4 h-4" />
                         Delete
                       </button>
                     </div>
@@ -158,9 +172,18 @@ export default function AdminConfessions() {
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                      <span>👍 {confession.like_count}</span>
-                      <span>😂 {confession.laugh_count}</span>
-                      <span>😢 {confession.sad_count}</span>
+                      <span className="flex items-center gap-1">
+                        <ThumbsUp className="w-4 h-4" />
+                        {confession.like_count}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Laugh className="w-4 h-4" />
+                        {confession.laugh_count}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Frown className="w-4 h-4" />
+                        {confession.sad_count}
+                      </span>
                     </div>
                     <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                       ID: {confession.id}

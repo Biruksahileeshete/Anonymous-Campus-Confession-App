@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
-// Using simple icons to avoid TypeScript issues
+import { Users, MessageSquare, Flag, MessageCircle, EyeOff, BarChart3 } from 'lucide-react';
 
 interface DashboardStats {
   totalConfessions: number;
@@ -46,10 +46,10 @@ export default function AdminDashboard() {
     }
   };
 
-  const StatCard = ({ title, value, icon, gradient }: {
+  const StatCard = ({ title, value, icon: Icon, gradient }: {
     title: string;
     value: number;
-    icon: string;
+    icon: React.ComponentType<any>;
     gradient: string;
   }) => (
     <div className="card-aurora p-8 hover:glass-strong transition-all duration-300 group animate-slideInUp h-full">
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
             <p className="text-5xl font-bold text-aurora">{value}</p>
           </div>
           <div className={`w-20 h-20 flex-shrink-0 bg-gradient-to-br ${gradient} rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300 border-2 border-white/20`}>
-            <span className="text-4xl text-white drop-shadow-lg">{icon}</span>
+            <Icon className="w-10 h-10 text-white drop-shadow-lg" />
           </div>
         </div>
         
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
           <div className="mb-10 animate-slideInUp">
             <div className="flex items-center space-x-4 mb-4">
               <div className="w-16 h-16 bg-gradient-to-br from-coral-500 via-teal-500 to-amber-500 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/30">
-                <span className="text-3xl text-white drop-shadow-lg">📊</span>
+                <BarChart3 className="w-8 h-8 text-white drop-shadow-lg" />
               </div>
               <div>
                 <h1 className="text-5xl font-bold text-aurora">Admin Dashboard</h1>
@@ -109,19 +109,19 @@ export default function AdminDashboard() {
                   <StatCard
                     title="Total Users"
                     value={stats.totalUsers}
-                    icon="👥"
+                    icon={Users}
                     gradient="from-coral-500 to-coral-600"
                   />
                   <StatCard
                     title="Total Confessions"
                     value={stats.totalConfessions}
-                    icon="💭"
+                    icon={MessageSquare}
                     gradient="from-teal-500 to-teal-600"
                   />
                   <StatCard
                     title="Pending Reports"
                     value={stats.totalReports}
-                    icon="🚩"
+                    icon={Flag}
                     gradient="from-red-500 to-red-600"
                   />
                 </div>
@@ -131,13 +131,13 @@ export default function AdminDashboard() {
                   <StatCard
                     title="Total Comments"
                     value={stats.totalComments}
-                    icon="💬"
+                    icon={MessageCircle}
                     gradient="from-amber-500 to-amber-600"
                   />
                   <StatCard
                     title="Hidden Posts"
                     value={stats.hiddenConfessions}
-                    icon="👁️"
+                    icon={EyeOff}
                     gradient="from-emerald-500 to-emerald-600"
                   />
                 </div>

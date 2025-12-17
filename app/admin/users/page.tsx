@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
+import { Users, Search, RefreshCw, Crown, User, FileText, Calendar, Ban, Trash2 } from 'lucide-react';
 
 interface User {
   id: string;
@@ -138,30 +139,41 @@ export default function AdminUsers() {
       
       <div className="flex-1 ml-64">
         <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-aurora mb-2">👥 User Management</h1>
-            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-              Manage user accounts and permissions
-            </p>
+          <div className="mb-8 animate-slideInUp">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-coral-500 to-teal-500 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/30">
+                <Users className="w-8 h-8 text-white drop-shadow-lg" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-aurora">User Management</h1>
+                <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+                  Manage user accounts and permissions
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Filters */}
           <div className="card-aurora p-6 mb-8">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="🔍 Search users by name, email, or student ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-modern w-full"
-                />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 z-10" />
+                  <input
+                    type="text"
+                    placeholder="Search users by name, email, or student ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="input-modern w-full pl-12 pr-4 py-3"
+                    style={{ paddingLeft: '3rem' }}
+                  />
+                </div>
               </div>
               <div>
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value as 'all' | 'user' | 'admin')}
-                  className="input-modern"
+                  className="input-modern py-3 px-4"
                 >
                   <option value="all">All Roles</option>
                   <option value="user">Users</option>
@@ -172,9 +184,11 @@ export default function AdminUsers() {
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-20 w-20 border-4 border-transparent border-t-coral-500 mx-auto"></div>
-              <p className="mt-4 text-xl">🚀 Loading users...</p>
+            <div className="text-center py-16">
+              <div className="card-aurora p-12 max-w-md mx-auto">
+                <div className="loading-aurora mx-auto mb-4"></div>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading users...</p>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -186,19 +200,23 @@ export default function AdminUsers() {
                   <button
                     onClick={fetchUsers}
                     disabled={loading}
-                    className="btn-aurora px-4 py-2 text-sm rounded-lg disabled:opacity-50"
+                    className="btn-aurora px-4 py-2 text-sm rounded-lg disabled:opacity-50 flex items-center gap-2"
                   >
-                    {loading ? '🔄 Loading...' : '🔄 Refresh'}
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    {loading ? 'Loading...' : 'Refresh'}
                   </button>
                   <div className="flex gap-2 text-sm">
-                    <span className="glass-coral px-3 py-1 rounded-full">
-                      👑 {users.filter(u => u.role === 'admin').length} Admins
+                    <span className="glass-coral px-3 py-1 rounded-full flex items-center gap-1">
+                      <Crown className="w-4 h-4" />
+                      {users.filter(u => u.role === 'admin').length} Admins
                     </span>
-                    <span className="glass-teal px-3 py-1 rounded-full">
-                      👤 {users.filter(u => u.role === 'user').length} Users
+                    <span className="glass-teal px-3 py-1 rounded-full flex items-center gap-1">
+                      <User className="w-4 h-4" />
+                      {users.filter(u => u.role === 'user').length} Users
                     </span>
-                    <span className="glass-amber px-3 py-1 rounded-full">
-                      📝 {users.reduce((sum, u) => sum + (u.confession_count || 0), 0)} Total Confessions
+                    <span className="glass-amber px-3 py-1 rounded-full flex items-center gap-1">
+                      <FileText className="w-4 h-4" />
+                      {users.reduce((sum, u) => sum + (u.confession_count || 0), 0)} Total Confessions
                     </span>
                   </div>
                 </div>
@@ -218,22 +236,22 @@ export default function AdminUsers() {
                           {user.full_name}
                         </h3>
                         <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                          📧 {user.email}
+                          {user.email}
                         </p>
                         <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
-                          🎓 {user.student_id} • Joined {formatDate(user.created_at)}
+                          {user.student_id} • Joined {formatDate(user.created_at)}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center space-x-4">
                       <div className="text-center">
-                        <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        <span className={`px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 ${
                           user.role === 'admin' 
                             ? 'bg-gradient-to-r from-coral-500 to-amber-500 text-white' 
                             : 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white'
                         }`}>
-                          {user.role === 'admin' ? '👑 Admin' : '👤 User'}
+                          {user.role === 'admin' ? <><Crown className="w-4 h-4" /> Admin</> : <><User className="w-4 h-4" /> User</>}
                         </span>
                       </div>
 
@@ -244,8 +262,8 @@ export default function AdminUsers() {
                           disabled={actionLoading === user.id}
                           className="input-modern text-sm py-2 px-3 disabled:opacity-50"
                         >
-                          <option value="user">👤 User</option>
-                          <option value="admin">👑 Admin</option>
+                          <option value="user">User</option>
+                          <option value="admin">Admin</option>
                         </select>
 
                         <button
@@ -259,7 +277,10 @@ export default function AdminUsers() {
                               Deleting...
                             </>
                           ) : (
-                            <>🗑️ Delete</>
+                            <>
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </>
                           )}
                         </button>
                       </div>
@@ -267,15 +288,18 @@ export default function AdminUsers() {
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2 text-sm">
-                    <span className="glass-amber px-3 py-1 rounded-full">
-                      📝 {user.confession_count || 0} Confessions
+                    <span className="glass-amber px-3 py-1 rounded-full flex items-center gap-1">
+                      <FileText className="w-4 h-4" />
+                      {user.confession_count || 0} Confessions
                     </span>
-                    <span className="glass-emerald px-3 py-1 rounded-full">
-                      📅 Joined {formatDate(user.created_at)}
+                    <span className="glass-emerald px-3 py-1 rounded-full flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      Joined {formatDate(user.created_at)}
                     </span>
                     {user.is_banned && (
-                      <span className="bg-red-500 text-white px-3 py-1 rounded-full">
-                        🚫 Banned
+                      <span className="bg-red-500 text-white px-3 py-1 rounded-full flex items-center gap-1">
+                        <Ban className="w-4 h-4" />
+                        Banned
                       </span>
                     )}
                   </div>
@@ -284,7 +308,7 @@ export default function AdminUsers() {
 
               {filteredUsers.length === 0 && (
                 <div className="card-aurora p-12 text-center">
-                  <div className="text-6xl mb-4">🔍</div>
+                  <Search className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                   <h3 className="text-xl font-bold text-aurora mb-2">No Users Found</h3>
                   <p style={{ color: 'var(--text-secondary)' }}>
                     Try adjusting your search criteria

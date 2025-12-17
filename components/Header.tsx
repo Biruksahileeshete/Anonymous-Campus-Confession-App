@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useTheme } from './ThemeProvider';
 import { 
   Bell, 
   RefreshCw, 
@@ -10,9 +11,11 @@ import {
   User, 
   Menu, 
   X,
-  Sparkles
+  Sparkles,
+  Sun,
+  Moon
 } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface User {
   id: string;
@@ -28,9 +31,17 @@ interface HeaderProps {
 }
 
 export default function Header({ user, onLogout }: HeaderProps) {
+  const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted before accessing theme
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,6 +79,39 @@ export default function Header({ user, onLogout }: HeaderProps) {
     }
   };
 
+  // Button functionality handlers
+  const handleReload = () => {
+    window.location.reload();
+  };
+
+  const handleToggleTheme = () => {
+    if (!mounted) return;
+    toggleTheme();
+  };
+
+  const handleLogout = () => {
+    // Clear user data
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    
+    // Call parent logout handler if provided
+    if (onLogout) {
+      onLogout();
+    } else {
+      // Fallback navigation
+      router.push('/auth');
+    }
+  };
+
+  const handleProfileClick = () => {
+    router.push('/profile');
+  };
+
+  const handleNotificationClick = () => {
+    setUnreadCount(0); // Clear unread count
+    router.push('/notifications');
+  };
+
   return (
     <motion.header 
       className={`glass-aurora sticky top-0 z-50 transition-all duration-500 ${
@@ -103,7 +147,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
           </motion.div>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             {user ? (
               <motion.div 
                 className="flex items-center space-x-3"
@@ -113,25 +157,39 @@ export default function Header({ user, onLogout }: HeaderProps) {
               >
                 {/* Reload Button */}
                 <motion.button
-                  onClick={() => window.location.reload()}
-                  className="glass-coral p-3 rounded-2xl hover:scale-110 transition-all duration-300 group"
+                  onClick={handleReload}
+                  className="glass-coral p-3 rounded-2xl hover:scale-105 transition-all duration-300 group"
                   title="Refresh Feed"
-                  whileHover={{ rotate: 180 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <RefreshCw className="w-5 h-5 text-coral-600 group-hover:text-coral-700" />
                 </motion.button>
 
                 {/* Theme Toggle Button */}
-                <ThemeToggle />
+                <motion.button
+                  onClick={handleToggleTheme}
+                  className="glass-emerald p-3 rounded-2xl hover:scale-105 transition-all duration-300 group"
+                  title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {mounted && (
+                    <>
+                      {theme === 'dark' ? (
+                        <Sun className="w-5 h-5 text-emerald-600 group-hover:text-emerald-700" />
+                      ) : (
+                        <Moon className="w-5 h-5 text-emerald-600 group-hover:text-emerald-700" />
+                      )}
+                    </>
+                  )}
+                </motion.button>
                 
-                {/* Notifications */}
+                {/* Notifications Button */}
                 <motion.div className="relative">
-                  <Link
-                    href="/notifications"
-                    className="glass-teal p-3 rounded-2xl hover:scale-110 transition-all duration-300 group relative"
-                    onClick={() => setUnreadCount(0)}
+                  <motion.button
+                    onClick={handleNotificationClick}
+                    className="glass-teal p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative"
                     title="Notifications"
+                    whileTap={{ scale: 0.95 }}
                   >
                     <Bell className="w-5 h-5 text-teal-600 group-hover:text-teal-700" />
                     <AnimatePresence>
@@ -140,43 +198,33 @@ export default function Header({ user, onLogout }: HeaderProps) {
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           exit={{ scale: 0 }}
-                          className="absolute -top-2 -right-2 badge-aurora text-xs min-w-[20px] h-5 flex items-center justify-center"
+                          className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full border-2 border-white shadow-lg font-bold"
                         >
                           {unreadCount > 99 ? '99+' : unreadCount}
                         </motion.span>
                       )}
                     </AnimatePresence>
-                  </Link>
+                  </motion.button>
                 </motion.div>
 
-                {/* Profile */}
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
+                {/* Profile Button */}
+                <motion.button
+                  onClick={handleProfileClick}
+                  className="w-10 h-10 bg-gradient-to-br from-coral-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white/30 hover:scale-105 transition-all duration-300"
+                  title={`${user.full_name} - ${user.role === 'admin' ? 'Administrator' : 'Student'}`}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Link
-                    href="/profile"
-                    className="card-aurora p-2 rounded-full hover:shadow-aurora transition-all duration-300"
-                    title={`${user.full_name} - ${user.role === 'admin' ? 'Administrator' : 'Student'}`}
-                  >
-                    <div className="relative">
-                      <div className="w-10 h-10 bg-gradient-to-br from-coral-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white/30">
-                        <span className="text-white text-sm font-bold">
-                          {user.full_name?.charAt(0).toUpperCase() || 'U'}
-                        </span>
-                      </div>
-                      <div className="absolute -inset-0.5 bg-gradient-to-br from-coral-400 to-teal-400 rounded-full opacity-20 blur-sm"></div>
-                    </div>
-                  </Link>
-                </motion.div>
+                  <span className="text-white text-sm font-bold">
+                    {user.full_name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </motion.button>
                 
-                {/* Logout */}
+                {/* Logout Button */}
                 <motion.button
-                  onClick={onLogout}
-                  className="glass-amber p-3 rounded-2xl hover:scale-110 transition-all duration-300 group"
+                  onClick={handleLogout}
+                  className="glass-amber p-3 rounded-2xl hover:scale-105 transition-all duration-300 group"
                   title="Logout"
-                  whileHover={{ rotate: -10 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   <LogOut className="w-5 h-5 text-amber-600 group-hover:text-amber-700" />
                 </motion.button>
@@ -242,7 +290,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
             >
               <motion.button
                 onClick={() => {
-                  window.location.reload();
+                  handleReload();
                   setIsMenuOpen(false);
                 }}
                 className="w-full glass-coral px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
@@ -253,45 +301,44 @@ export default function Header({ user, onLogout }: HeaderProps) {
                 <span style={{ color: 'var(--text-primary)' }}>Refresh Feed</span>
               </motion.button>
               
-              <motion.div>
-                <Link
-                  href="/notifications"
-                  className="block w-full glass-teal px-6 py-4 rounded-2xl font-medium"
-                  onClick={() => {
-                    setUnreadCount(0);
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <Bell className="w-5 h-5 text-teal-600" />
-                      <span style={{ color: 'var(--text-primary)' }}>Notifications</span>
-                    </div>
-                    {unreadCount > 0 && (
-                      <span className="badge-aurora text-xs">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </span>
-                    )}
-                  </div>
-                </Link>
-              </motion.div>
-              
-              <motion.div>
-                <Link
-                  href="/profile"
-                  className="block w-full glass-emerald px-6 py-4 rounded-2xl font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
+              <motion.button
+                onClick={() => {
+                  handleNotificationClick();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full glass-teal px-6 py-4 rounded-2xl text-left font-medium"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <User className="w-5 h-5 text-emerald-600" />
-                    <span style={{ color: 'var(--text-primary)' }}>Profile Settings</span>
+                    <Bell className="w-5 h-5 text-teal-600" />
+                    <span style={{ color: 'var(--text-primary)' }}>Notifications</span>
                   </div>
-                </Link>
-              </motion.div>
+                  {unreadCount > 0 && (
+                    <span className="badge-aurora text-xs">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </div>
+              </motion.button>
               
               <motion.button
                 onClick={() => {
-                  onLogout?.();
+                  handleProfileClick();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full glass-emerald px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <User className="w-5 h-5 text-emerald-600" />
+                <span style={{ color: 'var(--text-primary)' }}>Profile Settings</span>
+              </motion.button>
+              
+              <motion.button
+                onClick={() => {
+                  handleLogout();
                   setIsMenuOpen(false);
                 }}
                 className="w-full glass-amber px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
