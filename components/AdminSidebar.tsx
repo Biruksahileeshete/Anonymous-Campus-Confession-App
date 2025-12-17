@@ -38,11 +38,6 @@ export default function AdminSidebar() {
       label: 'Users',
       icon: Users
     }
-    {
-      href: '/admin/users',
-      label: 'Users',
-      icon: Users
-    }
   ];
 
   const handleLogout = () => {
