@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
+// Using simple icons to avoid TypeScript issues
 
 interface DashboardStats {
   totalConfessions: number;
@@ -51,14 +52,23 @@ export default function AdminDashboard() {
     icon: string;
     gradient: string;
   }) => (
-    <div className="glass rounded-3xl p-6 hover:glass-strong transition-all duration-300 group animate-slideInUp">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>{title}</p>
-          <p className="text-4xl font-bold gradient-text">{value}</p>
+    <div className="card-aurora p-8 hover:glass-strong transition-all duration-300 group animate-slideInUp h-full">
+      <div className="flex flex-col h-full">
+        <div className="flex items-start justify-between mb-6">
+          <div className="pr-4">
+            <p className="text-base font-medium mb-3" style={{ color: 'var(--text-secondary)' }}>{title}</p>
+            <p className="text-5xl font-bold text-aurora">{value}</p>
+          </div>
+          <div className={`w-20 h-20 flex-shrink-0 bg-gradient-to-br ${gradient} rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300 border-2 border-white/20`}>
+            <span className="text-4xl text-white drop-shadow-lg">{icon}</span>
+          </div>
         </div>
-        <div className={`w-16 h-16 ${gradient} rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300`}>
-          <span className="text-2xl">{icon}</span>
+        
+        <div className="mt-auto pt-6 border-t border-white/10">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center space-x-2" style={{ color: 'var(--text-secondary)' }}>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -72,11 +82,11 @@ export default function AdminDashboard() {
         <div className="p-8">
           <div className="mb-10 animate-slideInUp">
             <div className="flex items-center space-x-4 mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl">
-                <span className="text-2xl">📊</span>
+              <div className="w-16 h-16 bg-gradient-to-br from-coral-500 via-teal-500 to-amber-500 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/30">
+                <span className="text-3xl text-white drop-shadow-lg">📊</span>
               </div>
               <div>
-                <h1 className="text-5xl font-bold gradient-text">Admin Dashboard</h1>
+                <h1 className="text-5xl font-bold text-aurora">Admin Dashboard</h1>
                 <p className="text-xl mt-2" style={{ color: 'var(--text-secondary)' }}>
                   Monitor and manage campus confession activity
                 </p>
@@ -86,133 +96,50 @@ export default function AdminDashboard() {
 
           {loading ? (
             <div className="text-center py-16">
-              <div className="glass-strong p-12 rounded-3xl max-w-md mx-auto">
-                <div className="animate-spin rounded-full h-16 w-16 border-4 border-transparent border-t-current mx-auto mb-4" style={{ color: 'var(--primary-500)' }}></div>
+              <div className="card-aurora p-12 max-w-md mx-auto">
+                <div className="loading-aurora mx-auto mb-4"></div>
                 <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading dashboard...</p>
               </div>
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
-                <StatCard
-                  title="Total Users"
-                  value={stats.totalUsers}
-                  icon="👥"
-                  gradient="bg-gradient-to-br from-purple-500 to-purple-600"
-                />
-                <StatCard
-                  title="Total Confessions"
-                  value={stats.totalConfessions}
-                  icon="💭"
-                  gradient="bg-gradient-to-br from-blue-500 to-blue-600"
-                />
-                <StatCard
-                  title="Pending Reports"
-                  value={stats.totalReports}
-                  icon="🚩"
-                  gradient="bg-gradient-to-br from-red-500 to-red-600"
-                />
-                <StatCard
-                  title="Total Comments"
-                  value={stats.totalComments}
-                  icon="💬"
-                  gradient="bg-gradient-to-br from-green-500 to-green-600"
-                />
-                <StatCard
-                  title="Hidden Posts"
-                  value={stats.hiddenConfessions}
-                  icon="👁️"
-                  gradient="bg-gradient-to-br from-gray-500 to-gray-600"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="glass-strong rounded-3xl p-8 animate-slideInUp" style={{ animationDelay: '0.2s' }}>
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center">
-                      <span className="text-xl">📈</span>
-                    </div>
-                    <h3 className="text-2xl font-bold gradient-text">Recent Activity</h3>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="glass p-4 rounded-2xl hover:glass-strong transition-all duration-300">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
-                          <span className="text-xl">💭</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>New confession posted</p>
-                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>2 minutes ago</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="glass p-4 rounded-2xl hover:glass-strong transition-all duration-300">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center">
-                          <span className="text-xl">🚩</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Content reported</p>
-                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>15 minutes ago</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="glass p-4 rounded-2xl hover:glass-strong transition-all duration-300">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center">
-                          <span className="text-xl">💬</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>New comment added</p>
-                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>1 hour ago</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              <div className="space-y-8 mb-10">
+                {/* Top row - 3 large boxes */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <StatCard
+                    title="Total Users"
+                    value={stats.totalUsers}
+                    icon="👥"
+                    gradient="from-coral-500 to-coral-600"
+                  />
+                  <StatCard
+                    title="Total Confessions"
+                    value={stats.totalConfessions}
+                    icon="💭"
+                    gradient="from-teal-500 to-teal-600"
+                  />
+                  <StatCard
+                    title="Pending Reports"
+                    value={stats.totalReports}
+                    icon="🚩"
+                    gradient="from-red-500 to-red-600"
+                  />
                 </div>
 
-                <div className="glass-strong rounded-3xl p-8 animate-slideInUp" style={{ animationDelay: '0.4s' }}>
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center">
-                      <span className="text-xl">⚡</span>
-                    </div>
-                    <h3 className="text-2xl font-bold gradient-text">Quick Actions</h3>
-                  </div>
-                  <div className="space-y-4">
-                    <button className="w-full glass p-4 rounded-2xl hover:glass-strong transition-all duration-300 text-left group">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <span className="text-xl">🚩</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Review Reports</p>
-                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Check flagged content</p>
-                        </div>
-                      </div>
-                    </button>
-                    <button className="w-full glass p-4 rounded-2xl hover:glass-strong transition-all duration-300 text-left group">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <span className="text-xl">📊</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>View Analytics</p>
-                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Platform statistics</p>
-                        </div>
-                      </div>
-                    </button>
-                    <button className="w-full glass p-4 rounded-2xl hover:glass-strong transition-all duration-300 text-left group">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <span className="text-xl">⚙️</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Settings</p>
-                          <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Platform configuration</p>
-                        </div>
-                      </div>
-                    </button>
-                  </div>
+                {/* Bottom row - 2 large boxes spanning more width */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <StatCard
+                    title="Total Comments"
+                    value={stats.totalComments}
+                    icon="💬"
+                    gradient="from-amber-500 to-amber-600"
+                  />
+                  <StatCard
+                    title="Hidden Posts"
+                    value={stats.hiddenConfessions}
+                    icon="👁️"
+                    gradient="from-emerald-500 to-emerald-600"
+                  />
                 </div>
               </div>
             </>

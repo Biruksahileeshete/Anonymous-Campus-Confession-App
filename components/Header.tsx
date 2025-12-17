@@ -2,6 +2,16 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Bell, 
+  RefreshCw, 
+  LogOut, 
+  User, 
+  Menu, 
+  X,
+  Sparkles
+} from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 interface User {
@@ -20,11 +30,19 @@ interface HeaderProps {
 export default function Header({ user, onLogout }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (user) {
       fetchUnreadCount();
-      // Poll for new notifications every 30 seconds
       const interval = setInterval(fetchUnreadCount, 30000);
       return () => clearInterval(interval);
     }
@@ -51,166 +69,242 @@ export default function Header({ user, onLogout }: HeaderProps) {
   };
 
   return (
-    <header className="glass-strong sticky top-0 z-50 border-b border-white/10">
-      <div className="container mx-auto px-4 py-3">
+    <motion.header 
+      className={`glass-aurora sticky top-0 z-50 transition-all duration-500 ${
+        isScrolled ? 'backdrop-blur-xl border-b border-white/20' : 'backdrop-blur-lg'
+      }`}
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-105 transition-all duration-300">
-              <span className="text-white font-bold text-xl">🎭</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold gradient-text">
-                Campus Confessions
-              </h1>
-              <p className="text-xs opacity-70" style={{ color: 'var(--text-secondary)' }}>
-                Share anonymously
-              </p>
-            </div>
-          </Link>
+          {/* Logo */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link href="/" className="flex items-center space-x-4 group">
+              <div className="relative">
+                <div className="w-14 h-14 bg-gradient-to-br from-coral-500 to-teal-500 rounded-3xl flex items-center justify-center shadow-2xl group-hover:shadow-coral transition-all duration-500 border-2 border-white/30">
+                  <Sparkles className="w-7 h-7 text-white" />
+                </div>
+                <div className="absolute -inset-1 bg-gradient-to-br from-coral-400 to-teal-400 rounded-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 blur-sm"></div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-aurora bg-clip-text">
+                  Aurora Confessions
+                </h1>
+                <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  ✨ Share your story anonymously
+                </p>
+              </div>
+            </Link>
+          </motion.div>
           
-          <div className="hidden md:flex items-center space-x-3 ml-auto">
-            {/* Theme Toggle - Always visible */}
-            <ThemeToggle />
-            
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
             {user ? (
-              <>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="btn-primary p-3 rounded-xl hover:scale-105 transition-all duration-300"
-                  title="Reload"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0V9a8 8 0 1115.356 2M15 15v5h-.582M8.644 21A8.001 8.001 0 0019.418 15m0 0V15a8 8 0 00-15.356-2" />
-                  </svg>
-                </button>
-                
-                <Link
-                  href="/notifications"
-                  className="btn-secondary p-3 rounded-xl hover:scale-105 transition-all duration-300 relative"
-                  onClick={() => setUnreadCount(0)}
-                  title="Notifications"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-bounce">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
-                  )}
-                </Link>
-
-                <Link
-                  href="/profile"
-                  className="flex items-center space-x-3 glass px-4 py-2 rounded-xl hover:glass-strong transition-all duration-300"
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  <div className="w-9 h-9 bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <span className="text-white text-sm font-bold">
-                      {user.full_name?.charAt(0).toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                  <div className="hidden lg:block">
-                    <p className="text-sm font-semibold">
-                      {user.full_name?.split(' ')[0] || 'User'}
-                    </p>
-                    <p className="text-xs opacity-70">
-                      {user.role === 'admin' ? 'Administrator' : 'Student'}
-                    </p>
-                  </div>
-                </Link>
-                
-                <button
-                  onClick={onLogout}
-                  className="btn-accent p-3 rounded-xl hover:scale-105 transition-all duration-300"
-                  title="Logout"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </button>
-              </>
-            ) : (
-              <Link
-                href="/auth"
-                className="btn-primary px-6 py-3 rounded-xl flex items-center space-x-2 hover:scale-105 transition-all duration-300"
+              <motion.div 
+                className="flex items-center space-x-3"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <span>🚀</span>
-                <span>Get Started</span>
-              </Link>
+                {/* Reload Button */}
+                <motion.button
+                  onClick={() => window.location.reload()}
+                  className="glass-coral p-3 rounded-2xl hover:scale-110 transition-all duration-300 group"
+                  title="Refresh Feed"
+                  whileHover={{ rotate: 180 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <RefreshCw className="w-5 h-5 text-coral-600 group-hover:text-coral-700" />
+                </motion.button>
+
+                {/* Theme Toggle Button */}
+                <ThemeToggle />
+                
+                {/* Notifications */}
+                <motion.div className="relative">
+                  <Link
+                    href="/notifications"
+                    className="glass-teal p-3 rounded-2xl hover:scale-110 transition-all duration-300 group relative"
+                    onClick={() => setUnreadCount(0)}
+                    title="Notifications"
+                  >
+                    <Bell className="w-5 h-5 text-teal-600 group-hover:text-teal-700" />
+                    <AnimatePresence>
+                      {unreadCount > 0 && (
+                        <motion.span
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                          className="absolute -top-2 -right-2 badge-aurora text-xs min-w-[20px] h-5 flex items-center justify-center"
+                        >
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </Link>
+                </motion.div>
+
+                {/* Profile */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    href="/profile"
+                    className="card-aurora p-2 rounded-full hover:shadow-aurora transition-all duration-300"
+                    title={`${user.full_name} - ${user.role === 'admin' ? 'Administrator' : 'Student'}`}
+                  >
+                    <div className="relative">
+                      <div className="w-10 h-10 bg-gradient-to-br from-coral-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white/30">
+                        <span className="text-white text-sm font-bold">
+                          {user.full_name?.charAt(0).toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <div className="absolute -inset-0.5 bg-gradient-to-br from-coral-400 to-teal-400 rounded-full opacity-20 blur-sm"></div>
+                    </div>
+                  </Link>
+                </motion.div>
+                
+                {/* Logout */}
+                <motion.button
+                  onClick={onLogout}
+                  className="glass-amber p-3 rounded-2xl hover:scale-110 transition-all duration-300 group"
+                  title="Logout"
+                  whileHover={{ rotate: -10 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <LogOut className="w-5 h-5 text-amber-600 group-hover:text-amber-700" />
+                </motion.button>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Link
+                  href="/auth"
+                  className="btn-aurora px-8 py-3 rounded-2xl flex items-center space-x-3 font-semibold"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>Get Started</span>
+                </Link>
+              </motion.div>
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <button
+          {/* Mobile Menu Button */}
+          <motion.button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden bg-white/20 backdrop-blur-sm text-white p-2 rounded-lg"
+            className="md:hidden glass-aurora p-3 rounded-2xl"
+            whileTap={{ scale: 0.9 }}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+            <AnimatePresence mode="wait">
+              {isMenuOpen ? (
+                <motion.div
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <X className="w-6 h-6" style={{ color: 'var(--text-primary)' }} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="menu"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Menu className="w-6 h-6" style={{ color: 'var(--text-primary)' }} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
         </div>
 
-        {/* Mobile menu */}
-        {isMenuOpen && user && (
-          <div className="md:hidden mt-4 space-y-2 animate-slideIn">
-            <button
-              onClick={() => {
-                window.location.reload();
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-gradient-to-br from-indigo-500 to-purple-500 backdrop-blur-sm text-white px-4 py-3 rounded-lg text-left flex items-center space-x-2 hover:from-indigo-600 hover:to-purple-600 transition-all duration-200"
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && user && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden mt-6 space-y-3 overflow-hidden"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0V9a8 8 0 1115.356 2M15 15v5h-.582M8.644 21A8.001 8.001 0 0019.418 15m0 0V15a8 8 0 00-15.356-2" />
-              </svg>
-              <span>Reload</span>
-            </button>
-            <Link
-              href="/notifications"
-              className="block w-full bg-gradient-to-br from-indigo-500 to-purple-500 backdrop-blur-sm text-white px-4 py-3 rounded-lg relative hover:from-indigo-600 hover:to-purple-600 transition-all duration-200"
-              onClick={() => {
-                setUnreadCount(0);
-                setIsMenuOpen(false);
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                  <span>Notifications</span>
-                </div>
-                {unreadCount > 0 && (
-                  <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </div>
-            </Link>
-            <Link
-              href="/profile"
-              className="block w-full bg-white/20 backdrop-blur-sm text-white px-4 py-3 rounded-lg"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              👤 Profile Settings
-            </Link>
-            <button
-              onClick={() => {
-                onLogout?.();
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-gradient-to-br from-indigo-500 to-purple-500 backdrop-blur-sm text-white px-4 py-3 rounded-lg text-left flex items-center space-x-2 hover:from-indigo-600 hover:to-purple-600 transition-all duration-200"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013-3v1" />
-              </svg>
-              <span>Logout</span>
-            </button>
-          </div>
-        )}
+              <motion.button
+                onClick={() => {
+                  window.location.reload();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full glass-coral px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <RefreshCw className="w-5 h-5 text-coral-600" />
+                <span style={{ color: 'var(--text-primary)' }}>Refresh Feed</span>
+              </motion.button>
+              
+              <motion.div>
+                <Link
+                  href="/notifications"
+                  className="block w-full glass-teal px-6 py-4 rounded-2xl font-medium"
+                  onClick={() => {
+                    setUnreadCount(0);
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Bell className="w-5 h-5 text-teal-600" />
+                      <span style={{ color: 'var(--text-primary)' }}>Notifications</span>
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="badge-aurora text-xs">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              </motion.div>
+              
+              <motion.div>
+                <Link
+                  href="/profile"
+                  className="block w-full glass-emerald px-6 py-4 rounded-2xl font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <div className="flex items-center space-x-4">
+                    <User className="w-5 h-5 text-emerald-600" />
+                    <span style={{ color: 'var(--text-primary)' }}>Profile Settings</span>
+                  </div>
+                </Link>
+              </motion.div>
+              
+              <motion.button
+                onClick={() => {
+                  onLogout?.();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full glass-amber px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <LogOut className="w-5 h-5 text-amber-600" />
+                <span style={{ color: 'var(--text-primary)' }}>Logout</span>
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </header>
+    </motion.header>
   );
 }

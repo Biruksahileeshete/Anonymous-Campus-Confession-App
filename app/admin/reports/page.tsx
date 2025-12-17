@@ -107,61 +107,61 @@ export default function AdminReports() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="flex min-h-screen">
       <AdminSidebar />
       
       <div className="flex-1 ml-64">
         <div className="p-8">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">Reports Management</h1>
-            <p className="text-white/70 text-lg">Review and manage reported content</p>
+            <h1 className="text-4xl font-bold text-aurora mb-2">Reports Management</h1>
+            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Review and manage reported content</p>
           </div>
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="loading-aurora mx-auto"></div>
             </div>
           ) : reports.length === 0 ? (
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-12 text-center">
+            <div className="card-aurora p-12 text-center">
               <div className="text-6xl mb-4">🎉</div>
-              <h3 className="text-xl font-bold text-white mb-2">No Reports!</h3>
-              <p className="text-white/70">All content is clean. Great job, community!</p>
+              <h3 className="text-xl font-bold text-aurora mb-2">No Reports!</h3>
+              <p style={{ color: 'var(--text-secondary)' }}>All content is clean. Great job, community!</p>
             </div>
           ) : (
             <div className="space-y-6">
               {reports.map((report) => (
-                <div key={report.id} className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-6">
+                <div key={report.id} className="card-aurora p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${getReasonColor(report.reason)}`}>
                         {getReasonLabel(report.reason)}
                       </span>
-                      <span className="text-white/60 text-sm">
+                      <span className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
                         Reported {formatDate(report.created_at)}
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button 
                         onClick={() => handleAdminAction('hide_confession', report.confession_id)}
-                        className="px-3 py-1 bg-red-500/80 text-white rounded-lg hover:bg-red-600 transition text-sm backdrop-blur-sm"
+                        className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm"
                       >
                         Hide Content
                       </button>
                       <button 
                         onClick={() => handleAdminAction('warn_user', report.confession_author_id)}
-                        className="px-3 py-1 bg-yellow-500/80 text-white rounded-lg hover:bg-yellow-600 transition text-sm backdrop-blur-sm"
+                        className="px-3 py-1 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition text-sm"
                       >
                         Warn Author
                       </button>
                       <button 
                         onClick={() => handleAdminAction('warn_user', report.reported_by)}
-                        className="px-3 py-1 bg-orange-500/80 text-white rounded-lg hover:bg-orange-600 transition text-sm backdrop-blur-sm"
+                        className="px-3 py-1 bg-coral-500 text-white rounded-lg hover:bg-coral-600 transition text-sm"
                       >
                         Warn Reporter
                       </button>
                       <button 
                         onClick={() => handleAdminAction('dismiss_report', report.id)}
-                        className="px-3 py-1 bg-gray-500/80 text-white rounded-lg hover:bg-gray-600 transition text-sm backdrop-blur-sm"
+                        className="px-3 py-1 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition text-sm"
                       >
                         Dismiss
                       </button>
@@ -170,22 +170,22 @@ export default function AdminReports() {
 
                   {/* User Information */}
                   <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <h4 className="font-medium text-blue-800 mb-2">👤 Content Author:</h4>
-                      <p className="text-blue-700 font-medium">{report.author_name || 'Unknown'}</p>
-                      <p className="text-blue-600 text-sm">{report.author_email || 'No email'}</p>
+                    <div className="glass-teal p-4 rounded-lg">
+                      <h4 className="font-medium text-teal-600 mb-2">Content Author:</h4>
+                      <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{report.author_name || 'Unknown'}</p>
+                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{report.author_email || 'No email'}</p>
                     </div>
-                    <div className="bg-orange-50 rounded-lg p-4">
-                      <h4 className="font-medium text-orange-800 mb-2">🚩 Reported By:</h4>
-                      <p className="text-orange-700 font-medium">{report.reporter_name || 'Unknown'}</p>
-                      <p className="text-orange-600 text-sm">{report.reporter_email || 'No email'}</p>
+                    <div className="glass-coral p-4 rounded-lg">
+                      <h4 className="font-medium text-coral-600 mb-2">Reported By:</h4>
+                      <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{report.reporter_name || 'Unknown'}</p>
+                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{report.reporter_email || 'No email'}</p>
                     </div>
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="font-medium text-white mb-2">📝 Reported Content:</h4>
-                    <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                      <p className="text-white">
+                    <h4 className="font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Reported Content:</h4>
+                    <div className="glass p-4 rounded-lg">
+                      <p style={{ color: 'var(--text-primary)' }}>
                         {report.confession_content || 'Content not available'}
                       </p>
                     </div>
@@ -193,14 +193,14 @@ export default function AdminReports() {
 
                   {report.explanation && (
                     <div className="mb-4">
-                      <h4 className="font-medium text-white mb-2">💬 Reporter's Explanation:</h4>
-                      <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                        <p className="text-white/80">{report.explanation}</p>
+                      <h4 className="font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Reporter's Explanation:</h4>
+                      <div className="glass p-4 rounded-lg">
+                        <p style={{ color: 'var(--text-secondary)' }}>{report.explanation}</p>
                       </div>
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between text-sm text-white/50">
+                  <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-tertiary)' }}>
                     <span>Report ID: {report.id}</span>
                     <span>Confession ID: {report.confession_id}</span>
                   </div>

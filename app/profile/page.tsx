@@ -119,12 +119,12 @@ export default function ProfilePage() {
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="glass-strong rounded-3xl p-8 animate-slideInUp">
           <div className="text-center mb-10">
-            <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-orange-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+            <div className="w-24 h-24 bg-gradient-to-br from-coral-500 via-teal-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl border-4 border-white/30">
               <span className="text-4xl text-white font-bold">
                 {user.full_name?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
-            <h1 className="text-4xl font-bold gradient-text mb-3">Profile Settings</h1>
+            <h1 className="text-4xl font-bold text-aurora mb-3">Profile Settings</h1>
             <p className="text-xl" style={{ color: 'var(--text-secondary)' }}>
               Manage your account information
             </p>
@@ -181,7 +181,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="pt-8" style={{ borderTop: `2px solid var(--border-primary)` }}>
-              <h3 className="text-2xl font-bold gradient-text mb-6 flex items-center space-x-3">
+              <h3 className="text-2xl font-bold text-aurora mb-6 flex items-center space-x-3">
                 <span>🔐</span>
                 <span>Change Password</span>
               </h3>
@@ -252,7 +252,7 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full py-4 px-8 text-lg font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="btn-aurora w-full py-4 px-8 text-lg font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {loading ? (
                 <div className="flex items-center justify-center space-x-3">
@@ -260,10 +260,7 @@ export default function ProfilePage() {
                   <span>Updating...</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center space-x-3">
-                  <span className="text-xl">💾</span>
-                  <span>Update Profile</span>
-                </div>
+                <span>Save Changes</span>
               )}
             </button>
           </form>

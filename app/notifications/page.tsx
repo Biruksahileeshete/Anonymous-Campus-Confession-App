@@ -117,8 +117,11 @@ export default function NotificationsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-white/30 border-t-white"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card-aurora p-8">
+          <div className="loading-aurora mx-auto mb-4"></div>
+          <p style={{ color: 'var(--text-secondary)' }}>Loading...</p>
+        </div>
       </div>
     );
   }
@@ -128,20 +131,34 @@ export default function NotificationsPage() {
       <Header user={user} onLogout={handleLogout} />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">📢 Notifications</h1>
-          <p className="text-white/70 text-lg">Stay updated with your activity</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-aurora mb-2">📢 Notifications</h1>
+            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Stay updated with your activity</p>
+          </div>
+          <button
+            onClick={fetchNotifications}
+            className="btn-teal px-6 py-3 rounded-2xl flex items-center space-x-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0V9a8 8 0 1115.356 2M15 15v5h-.582M8.644 21A8.001 8.001 0 0019.418 15m0 0V15a8 8 0 00-15.356-2" />
+            </svg>
+            <span>Refresh</span>
+          </button>
         </div>
 
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="card-aurora p-12">
+              <div className="loading-aurora mx-auto mb-4"></div>
+              <p style={{ color: 'var(--text-secondary)' }}>Loading notifications...</p>
+            </div>
           </div>
         ) : notifications.length === 0 ? (
-          <div className="glass rounded-2xl p-12 text-center backdrop-blur-lg">
-            <div className="text-6xl mb-4">🔔</div>
-            <h3 className="text-xl font-bold text-white mb-2">No Notifications</h3>
-            <p className="text-white/70">You're all caught up! New notifications will appear here.</p>
+          <div className="card-aurora p-12 text-center">
+            <div className="text-6xl mb-6">🔔</div>
+            <h3 className="text-2xl font-bold text-aurora mb-3">No Notifications</h3>
+            <p style={{ color: 'var(--text-secondary)' }}>You're all caught up! New notifications will appear here.</p>
           </div>
         ) : (
           <div className="space-y-4">

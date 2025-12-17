@@ -7,11 +7,15 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Anonymous Campus Confession',
+  title: 'Aurora Confessions',
   description: 'Share your thoughts anonymously with your campus community',
-  keywords: 'anonymous, confession, campus, university, students, community',
-  authors: [{ name: 'Campus Confession Team' }],
-  viewport: 'width=device-width, initial-scale=1',
+  keywords: 'anonymous, confession, campus, university, students, community, aurora',
+  authors: [{ name: 'Aurora Confessions Team' }],
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({

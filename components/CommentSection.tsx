@@ -116,34 +116,33 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
   if (isLoading) {
     return (
       <div className="text-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+        <div className="loading-aurora mx-auto"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Comment Form */}
       {localStorage.getItem('token') && (
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            rows={3}
+            placeholder="Share your thoughts on this confession..."
+            className="input-aurora resize-none h-24"
             maxLength={500}
           />
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">
-              {newComment.length}/500
+            <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
+              {newComment.length}/500 characters
             </span>
             <button
               type="submit"
               disabled={!newComment.trim() || isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-teal px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Posting...' : 'Comment'}
+              {isSubmitting ? 'Posting...' : 'Post Comment'}
             </button>
           </div>
         </form>
@@ -151,25 +150,32 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
 
       {/* Comments List */}
       {comments.length === 0 ? (
-        <div className="text-center py-6 text-gray-500">
-          <p>No comments yet. Be the first to comment!</p>
+        <div className="text-center py-8">
+          <div className="glass-aurora p-6 rounded-2xl">
+            <div className="text-4xl mb-3">💬</div>
+            <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>
+              No comments yet. Be the first to share your thoughts!
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {comments.map((comment) => (
-            <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">A</span>
+            <div key={comment.id} className="glass-aurora p-4 rounded-2xl">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">A</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-700">Anonymous</span>
+                  <div>
+                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Anonymous</span>
+                    <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {formatDate(comment.created_at)}
+                    </div>
+                  </div>
                 </div>
-                <span className="text-xs text-gray-500">
-                  {formatDate(comment.created_at)}
-                </span>
               </div>
-              <p className="text-gray-800 whitespace-pre-wrap">
+              <p className="leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
                 {comment.content}
               </p>
             </div>
