@@ -7,7 +7,7 @@ export const GET = requireAuth(async (request: NextRequest, user: any) => {
     const count = await simpleDb.getUnreadNotificationCount(user.id);
     return NextResponse.json({ count });
   } catch (error) {
-    console.error('Error fetching unread notification count:', error);
-    return NextResponse.json({ error: 'Failed to fetch unread count' }, { status: 500 });
+    console.error('Error fetching unread count:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });

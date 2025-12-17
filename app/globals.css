@@ -153,8 +153,14 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+[data-theme="light"] .bg-gradient-to-br {
+  background: linear-gradient(135deg, #000000, #1f2937) !important;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
 [data-theme="light"] .lucide-sparkles {
-  color: #000000 !important;
+  color: #ffffff !important;
 }
 
 [data-theme="dark"] .lucide-sparkles {
@@ -324,6 +330,63 @@ hr, .divider {
 /* Faster transitions for navigation */
 a, button, [role="button"] {
   transition: all 0.1s ease;
+}
+
+/* Aurora Badge for Notifications */
+.badge-aurora {
+  background: linear-gradient(135deg, var(--coral-500), var(--teal-500));
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(239, 116, 84, 0.4);
+  animation: aurora-pulse 2s ease-in-out infinite;
+  min-width: 20px;
+  text-align: center;
+  border: 2px solid white;
+}
+
+/* Circular Button Styling */
+.glass-coral, .glass-teal, .glass-amber, .glass-emerald {
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.glass-coral:hover, .glass-teal:hover, .glass-amber:hover, .glass-emerald:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading Animation */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Link Loading States */
+a, button {
+  position: relative;
+  overflow: hidden;
+}
+
+a:active::after, button:active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  to {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
 }
 
 /* Responsive */

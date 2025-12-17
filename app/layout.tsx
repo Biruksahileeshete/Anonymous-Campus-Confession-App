@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import SessionProvider from '@/components/SessionProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import LoadingOverlay from '@/components/LoadingOverlay';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <SessionProvider>
+            <LoadingOverlay />
             {children}
           </SessionProvider>
         </ThemeProvider>

@@ -12,6 +12,8 @@ interface User {
   created_at: string;
   confession_count?: number;
   last_active?: string;
+  is_banned?: boolean;
+  ban_reason?: string;
 }
 
 export default function AdminUsers() {
