@@ -104,9 +104,11 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="glass-strong p-8 rounded-2xl">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-transparent border-t-current mx-auto" style={{ color: 'var(--primary-500)' }}></div>
-          <p className="mt-4 text-center" style={{ color: 'var(--text-secondary)' }}>Loading...</p>
+        <div className="card-aurora p-8 rounded-3xl animate-glow">
+          <div className="animate-spin rounded-full h-20 w-20 border-4 border-transparent border-t-coral-500 mx-auto"></div>
+          <p className="mt-6 text-center text-xl font-semibold" style={{ color: 'var(--text-secondary)' }}>
+            🚀 Loading Aurora Profile...
+          </p>
         </div>
       </div>
     );
@@ -117,24 +119,24 @@ export default function ProfilePage() {
       <Header user={user} onLogout={handleLogout} />
       
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="glass-strong rounded-3xl p-8 animate-slideInUp">
+        <div className="card-aurora profile-card rounded-3xl p-8 animate-slideInUp">
           <div className="text-center mb-10">
-            <div className="w-24 h-24 bg-gradient-to-br from-coral-500 via-teal-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl border-4 border-white/30">
-              <span className="text-4xl text-white font-bold">
+            <div className="profile-avatar w-28 h-28 bg-gradient-to-br from-coral-500 via-teal-500 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl border-4 border-white/30 animate-glow">
+              <span className="text-5xl text-white font-bold">
                 {user.full_name?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
-            <h1 className="text-4xl font-bold text-aurora mb-3">Profile Settings</h1>
+            <h1 className="text-4xl font-bold text-aurora mb-3 animate-float">✨ Profile Settings</h1>
             <p className="text-xl" style={{ color: 'var(--text-secondary)' }}>
-              Manage your account information
+              🚀 Manage your Aurora account
             </p>
           </div>
 
           <form onSubmit={handleUpdateProfile} className="space-y-8">
             <div className="grid gap-6">
-              <div>
-                <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
-                  Full Name
+              <div className="glass-coral p-6 rounded-2xl">
+                <label className="block font-semibold mb-3 text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  👤 Full Name
                 </label>
                 <input
                   type="text"
@@ -142,14 +144,14 @@ export default function ProfilePage() {
                   value={formData.fullName}
                   onChange={handleInputChange}
                   className="input-modern w-full text-lg"
-                  placeholder="Enter your full name"
+                  placeholder="✨ Enter your full name"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
-                  Email
+              <div className="glass-teal p-6 rounded-2xl">
+                <label className="block font-semibold mb-3 text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  📧 Email
                 </label>
                 <input
                   type="email"
@@ -163,9 +165,9 @@ export default function ProfilePage() {
                 </p>
               </div>
 
-              <div>
-                <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
-                  Student ID
+              <div className="glass-amber p-6 rounded-2xl">
+                <label className="block font-semibold mb-3 text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  🎓 Student ID
                 </label>
                 <input
                   type="text"
@@ -180,16 +182,16 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="pt-8" style={{ borderTop: `2px solid var(--border-primary)` }}>
-              <h3 className="text-2xl font-bold text-aurora mb-6 flex items-center space-x-3">
+            <div className="pt-8 mt-8 border-t-2 border-gradient-to-r from-coral-500 to-teal-500">
+              <h3 className="text-2xl font-bold text-aurora mb-6 flex items-center space-x-3 animate-float">
                 <span>🔐</span>
-                <span>Change Password</span>
+                <span>Security Settings</span>
               </h3>
               
               <div className="space-y-6">
-                <div>
-                  <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
-                    Current Password
+                <div className="glass-coral p-6 rounded-2xl">
+                  <label className="block font-semibold mb-3 text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    🔑 Current Password
                   </label>
                   <input
                     type="password"
@@ -197,13 +199,13 @@ export default function ProfilePage() {
                     value={formData.currentPassword}
                     onChange={handleInputChange}
                     className="input-modern w-full text-lg"
-                    placeholder="Enter current password"
+                    placeholder="🔒 Enter current password"
                   />
                 </div>
 
-                <div>
-                  <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
-                    New Password
+                <div className="glass-teal p-6 rounded-2xl">
+                  <label className="block font-semibold mb-3 text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    🆕 New Password
                   </label>
                   <input
                     type="password"
@@ -211,13 +213,13 @@ export default function ProfilePage() {
                     value={formData.newPassword}
                     onChange={handleInputChange}
                     className="input-modern w-full text-lg"
-                    placeholder="Enter new password"
+                    placeholder="✨ Enter new password"
                   />
                 </div>
 
-                <div>
-                  <label className="block font-semibold mb-3 text-lg" style={{ color: 'var(--text-primary)' }}>
-                    Confirm New Password
+                <div className="glass-amber p-6 rounded-2xl">
+                  <label className="block font-semibold mb-3 text-lg flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                    ✅ Confirm Password
                   </label>
                   <input
                     type="password"
@@ -225,7 +227,7 @@ export default function ProfilePage() {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     className="input-modern w-full text-lg"
-                    placeholder="Confirm new password"
+                    placeholder="🔄 Confirm new password"
                   />
                 </div>
               </div>
@@ -252,15 +254,15 @@ export default function ProfilePage() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-aurora w-full py-4 px-8 text-lg font-semibold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="btn-aurora w-full py-5 px-8 text-xl font-bold rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 animate-glow"
             >
               {loading ? (
                 <div className="flex items-center justify-center space-x-3">
                   <div className="animate-spin rounded-full h-6 w-6 border-3 border-transparent border-t-current"></div>
-                  <span>Updating...</span>
+                  <span>🚀 Updating...</span>
                 </div>
               ) : (
-                <span>Save Changes</span>
+                <span>💾 Save Changes</span>
               )}
             </button>
           </form>
