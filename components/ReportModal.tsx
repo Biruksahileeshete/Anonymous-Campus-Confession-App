@@ -25,8 +25,10 @@ export default function ReportModal({ confessionId, onClose, onSuccess }: Report
     
     if (!reason) return;
 
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const token = localStorage.getItem('token');
-    if (!token) {
+    
+    if (!token || !user.id) {
       alert('Please log in to report content');
       return;
     }
@@ -41,58 +43,68 @@ export default function ReportModal({ confessionId, onClose, onSuccess }: Report
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          confessionId,
+          confession_id: confessionId,
+          reported_by: user.id,
           reason,
-          explanation: explanation.trim() || undefined,
+          explanation: explanation.trim() || null,
         }),
       });
+
+      const data = await response.json();
 
       if (response.ok) {
         onSuccess();
         onClose();
-        alert('Report submitted successfully. Thank you for helping keep our community safe.');
+        // Show success message without blocking
+        setTimeout(() => {
+          alert('✅ Report submitted successfully! Thank you for keeping our community safe.');
+        }, 100);
       } else {
-        const errorData = await response.json();
-        alert(errorData.error || 'Failed to submit report. Please try again.');
+        alert(data.error || 'Failed to submit report. Please try again.');
       }
     } catch (error) {
       console.error('Error submitting report:', error);
-      alert('An error occurred. Please try again.');
+      alert('Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-gray-800">Report Confession</h3>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+      <div className="card-aurora max-w-md w-full p-8 animate-slideInUp">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold text-aurora flex items-center gap-2">
+            🚨 Report Content
+          </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-2xl hover:text-coral-500 transition-colors"
+            style={{ color: 'var(--text-tertiary)' }}
           >
             ✕
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Why are you reporting this confession?
+            <label className="block text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+              🤔 Why are you reporting this confession?
             </label>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {reasons.map((reasonOption) => (
-                <label key={reasonOption.value} className="flex items-center">
+                <label key={reasonOption.value} className="flex items-center glass-coral p-3 rounded-xl cursor-pointer hover:scale-105 transition-transform">
                   <input
                     type="radio"
                     name="reason"
                     value={reasonOption.value}
                     checked={reason === reasonOption.value}
                     onChange={(e) => setReason(e.target.value)}
-                    className="mr-3 text-blue-600"
+                    className="mr-4 w-4 h-4 text-coral-500"
                   />
-                  <span className="text-sm text-gray-700">{reasonOption.label}</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {reasonOption.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -100,45 +112,53 @@ export default function ReportModal({ confessionId, onClose, onSuccess }: Report
 
           {(reason === 'other' || reason) && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Additional details (optional)
+              <label className="block text-lg font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                📝 Additional details {reason !== 'other' && '(optional)'}
               </label>
               <textarea
                 value={explanation}
                 onChange={(e) => setExplanation(e.target.value)}
-                placeholder="Please provide more details about why you're reporting this content..."
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                rows={3}
+                placeholder="💭 Please provide more details about why you're reporting this content..."
+                className="input-modern w-full resize-none"
+                rows={4}
                 maxLength={500}
               />
-              <div className="text-right text-sm text-gray-500 mt-1">
-                {explanation.length}/500
+              <div className="text-right text-sm mt-2" style={{ color: 'var(--text-tertiary)' }}>
+                {explanation.length}/500 characters
               </div>
             </div>
           )}
 
-          <div className="flex space-x-3 pt-4">
+          <div className="flex space-x-4 pt-6">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition"
+              className="flex-1 py-3 px-6 glass-aurora rounded-xl font-semibold hover:scale-105 transition-transform"
+              style={{ color: 'var(--text-primary)' }}
             >
-              Cancel
+              ❌ Cancel
             </button>
             <button
               type="submit"
               disabled={!reason || isSubmitting}
-              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Report'}
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  Submitting...
+                </span>
+              ) : (
+                '🚨 Submit Report'
+              )}
             </button>
           </div>
         </form>
 
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Note:</strong> All reports are reviewed by our moderation team. 
-            False reports may result in restrictions on your account.
+        <div className="mt-6 glass-amber p-4 rounded-xl">
+          <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            <strong>⚠️ Important:</strong> All reports are reviewed by our moderation team. 
+            False reports may result in account restrictions.
           </p>
         </div>
       </div>

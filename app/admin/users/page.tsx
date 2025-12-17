@@ -8,16 +8,17 @@ interface User {
   email: string;
   full_name: string;
   student_id: string;
-  role: string;
+  role: 'user' | 'admin';
   created_at: string;
-  is_banned: boolean;
-  ban_reason?: string;
+  confession_count?: number;
+  last_active?: string;
 }
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
 
   useEffect(() => {
     fetchUsers();
@@ -31,7 +32,6 @@ export default function AdminUsers() {
           'Authorization': `Bearer ${token}`
         }
       });
-
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
@@ -43,51 +43,65 @@ export default function AdminUsers() {
     }
   };
 
-  const handleAction = async (action: string, userId: string, newRole?: string) => {
-    let reason = '';
-    
-    if (action === 'delete_user') {
-      if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-        return;
-      }
-      reason = 'Admin deletion';
-    } else if (action === 'change_role') {
-      if (!newRole) return;
-      reason = `Role changed to ${newRole}`;
-    } else {
-      reason = prompt(`Enter reason for ${action}:`);
-      if (!reason) return;
-    }
-
+  const handleRoleChange = async (userId: string, newRole: 'user' | 'admin') => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/actions', {
-        method: 'POST',
+      const response = await fetch('/api/admin/users/role', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          action,
-          targetId: userId,
-          reason,
-          newRole
-        })
+        body: JSON.stringify({ userId, role: newRole })
       });
 
       if (response.ok) {
-        const result = await response.json();
-        alert(result.message);
-        fetchUsers(); // Refresh the list
+        setUsers(users.map(user => 
+          user.id === userId ? { ...user, role: newRole } : user
+        ));
+        alert(`User role updated to ${newRole}`);
       } else {
-        const errorData = await response.json();
-        alert(errorData.error || 'Failed to perform action');
+        alert('Failed to update user role');
       }
     } catch (error) {
-      console.error('Error performing action:', error);
+      console.error('Error updating role:', error);
       alert('An error occurred');
     }
   };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setUsers(users.filter(user => user.id !== userId));
+        alert('User deleted successfully');
+      } else {
+        alert('Failed to delete user');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('An error occurred');
+    }
+  };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.student_id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -98,122 +112,142 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="flex min-h-screen">
       <AdminSidebar />
       
       <div className="flex-1 ml-64">
         <div className="p-8">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">User Management</h1>
-            <p className="text-white/70 text-lg">Manage user accounts and permissions</p>
+            <h1 className="text-4xl font-bold text-aurora mb-2">👥 User Management</h1>
+            <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
+              Manage user accounts and permissions
+            </p>
+          </div>
+
+          {/* Filters */}
+          <div className="card-aurora p-6 mb-8">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="🔍 Search users by name, email, or student ID..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="input-modern w-full"
+                />
+              </div>
+              <div>
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value as 'all' | 'user' | 'admin')}
+                  className="input-modern"
+                >
+                  <option value="all">All Roles</option>
+                  <option value="user">Users</option>
+                  <option value="admin">Admins</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           {loading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            </div>
-          ) : users.length === 0 ? (
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-12 text-center">
-              <div className="text-6xl mb-4">👥</div>
-              <h3 className="text-xl font-bold text-white mb-2">No Users Yet</h3>
-              <p className="text-white/70">Users will appear here once they register</p>
+              <div className="animate-spin rounded-full h-20 w-20 border-4 border-transparent border-t-coral-500 mx-auto"></div>
+              <p className="mt-4 text-xl">🚀 Loading users...</p>
             </div>
           ) : (
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-white/5">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-white font-medium">User</th>
-                      <th className="px-6 py-4 text-left text-white font-medium">Student ID</th>
-                      <th className="px-6 py-4 text-left text-white font-medium">Role</th>
-                      <th className="px-6 py-4 text-left text-white font-medium">Status</th>
-                      <th className="px-6 py-4 text-left text-white font-medium">Joined</th>
-                      <th className="px-6 py-4 text-left text-white font-medium">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
-                    {users.map((user) => (
-                      <tr key={user.id} className={user.is_banned ? 'opacity-50' : ''}>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-sm font-bold">
-                                {user.full_name?.charAt(0).toUpperCase() || 'U'}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="text-white font-medium">{user.full_name}</p>
-                              <p className="text-white/60 text-sm">{user.email}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-white/80">{user.student_id}</td>
-                        <td className="px-6 py-4">
-                          {editingRole === user.id ? (
-                            <div className="flex items-center space-x-2">
-                              <select
-                                value={user.role}
-                                onChange={(e) => {
-                                  const newRole = e.target.value;
-                                  handleAction('change_role', user.id, newRole);
-                                  setEditingRole(null);
-                                }}
-                                className="bg-white/20 text-white border border-white/30 rounded px-2 py-1 text-xs"
-                              >
-                                <option value="user" className="text-black">User</option>
-                                <option value="admin" className="text-black">Admin</option>
-                              </select>
-                              <button
-                                onClick={() => setEditingRole(null)}
-                                className="text-white/60 hover:text-white text-xs"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setEditingRole(user.id)}
-                              className={`px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition ${
-                                user.role === 'admin' 
-                                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
-                                  : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                              }`}
-                            >
-                              {user.role}
-                            </button>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {user.is_banned ? (
-                            <div>
-                              <span className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded-full border border-red-500/30">
-                                Banned
-                              </span>
-                              {user.ban_reason && (
-                                <p className="text-xs text-white/60 mt-1">{user.ban_reason}</p>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded-full border border-green-500/30">
-                              Active
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-white/60 text-sm">{formatDate(user.created_at)}</td>
-                        <td className="px-6 py-4">
-                          <button 
-                            onClick={() => handleAction('delete_user', user.id)}
-                            className="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded-full border border-red-500/30 font-medium hover:bg-red-500/30 transition cursor-pointer"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-aurora">
+                  {filteredUsers.length} Users Found
+                </h2>
+                <div className="flex gap-4 text-sm">
+                  <span className="glass-coral px-3 py-1 rounded-full">
+                    👑 {users.filter(u => u.role === 'admin').length} Admins
+                  </span>
+                  <span className="glass-teal px-3 py-1 rounded-full">
+                    👤 {users.filter(u => u.role === 'user').length} Users
+                  </span>
+                </div>
               </div>
+
+              {filteredUsers.map((user) => (
+                <div key={user.id} className="card-aurora p-6 hover:scale-[1.01] transition-transform">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-coral-500 to-teal-500 rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">
+                          {user.full_name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                          {user.full_name}
+                        </h3>
+                        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                          📧 {user.email}
+                        </p>
+                        <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                          🎓 {user.student_id} • Joined {formatDate(user.created_at)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-4">
+                      <div className="text-center">
+                        <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                          user.role === 'admin' 
+                            ? 'bg-gradient-to-r from-coral-500 to-amber-500 text-white' 
+                            : 'bg-gradient-to-r from-teal-500 to-emerald-500 text-white'
+                        }`}>
+                          {user.role === 'admin' ? '👑 Admin' : '👤 User'}
+                        </span>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
+                          className="input-modern text-sm py-2 px-3"
+                        >
+                          <option value="user">👤 User</option>
+                          <option value="admin">👑 Admin</option>
+                        </select>
+
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium"
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {user.confession_count !== undefined && (
+                    <div className="mt-4 flex space-x-4 text-sm">
+                      <span className="glass-amber px-3 py-1 rounded-full">
+                        📝 {user.confession_count} Confessions
+                      </span>
+                      {user.last_active && (
+                        <span className="glass-emerald px-3 py-1 rounded-full">
+                          🕒 Last active: {formatDate(user.last_active)}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {filteredUsers.length === 0 && (
+                <div className="card-aurora p-12 text-center">
+                  <div className="text-6xl mb-4">🔍</div>
+                  <h3 className="text-xl font-bold text-aurora mb-2">No Users Found</h3>
+                  <p style={{ color: 'var(--text-secondary)' }}>
+                    Try adjusting your search criteria
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
