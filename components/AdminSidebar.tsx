@@ -32,11 +32,6 @@ export default function AdminSidebar() {
       href: '/admin/confessions',
       label: 'Confessions',
       icon: MessageSquare
-    },
-    {
-      href: '/admin/users',
-      label: 'Users',
-      icon: Users
     }
   ];
 
@@ -96,6 +91,24 @@ export default function AdminSidebar() {
               <span>{item.label}</span>
             </Link>
           ))}
+          
+          
+          {/* Separator */}
+          <div className="border-t border-white/10 my-4"></div>
+          
+          {/* Dedicated Users Button */}
+          <Link
+            href="/admin/users"
+            className={`flex items-center space-x-4 px-4 py-4 rounded-2xl transition-all duration-300 font-medium group ${
+              pathname === '/admin/users'
+                ? 'btn-aurora shadow-xl'
+                : 'glass-emerald hover:glass-strong hover:scale-105'
+            }`}
+            style={pathname !== '/admin/users' ? { color: 'var(--text-primary)' } : {}}
+          >
+            <Users className="w-5 h-5 group-hover:scale-110 transition-transform duration-300 admin-icon" />
+            <span>👥 User Management</span>
+          </Link>
         </nav>
       </div>
 
