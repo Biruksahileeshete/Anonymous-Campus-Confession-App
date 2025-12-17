@@ -314,12 +314,26 @@ export class SimpleDatabase {
 
   async getAllUsers() {
     const result = await queryNeon(`
-      SELECT id, email, full_name, student_id, role, created_at, is_banned, ban_reason
-      FROM users 
-      ORDER BY created_at DESC
+      SELECT 
+        u.id, 
+        u.email, 
+        u.full_name, 
+        u.student_id, 
+        u.role, 
+        u.created_at, 
+        u.is_banned, 
+        u.ban_reason,
+        COUNT(c.id) as confession_count
+      FROM users u
+      LEFT JOIN confessions c ON u.id = c.author_id AND c.is_hidden = false
+      GROUP BY u.id, u.email, u.full_name, u.student_id, u.role, u.created_at, u.is_banned, u.ban_reason
+      ORDER BY u.created_at DESC
     `);
     
-    return result.rows;
+    return result.rows.map(row => ({
+      ...row,
+      confession_count: parseInt(row.confession_count) || 0
+    }));
   }
 
   async getAllConfessions() {

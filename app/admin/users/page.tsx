@@ -19,6 +19,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -35,15 +36,20 @@ export default function AdminUsers() {
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
+      } else {
+        console.error('Failed to fetch users:', response.status);
+        alert('Failed to load users. Please refresh the page.');
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+      alert('Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleRoleChange = async (userId: string, newRole: 'user' | 'admin') => {
+    setActionLoading(userId);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('/api/admin/users/role', {
@@ -59,21 +65,29 @@ export default function AdminUsers() {
         setUsers(users.map(user => 
           user.id === userId ? { ...user, role: newRole } : user
         ));
-        alert(`User role updated to ${newRole}`);
+        // Show success message without blocking
+        setTimeout(() => {
+          alert(`✅ User role updated to ${newRole === 'admin' ? '👑 Admin' : '👤 User'}`);
+        }, 100);
       } else {
-        alert('Failed to update user role');
+        const errorData = await response.json();
+        alert(`❌ Failed to update role: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating role:', error);
-      alert('An error occurred');
+      alert('❌ Network error. Please try again.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    const user = users.find(u => u.id === userId);
+    if (!confirm(`⚠️ Are you sure you want to delete "${user?.full_name}"?\n\nThis will permanently delete:\n• User account\n• All their confessions\n• All their comments\n• All their reactions\n\nThis action CANNOT be undone!`)) {
       return;
     }
 
+    setActionLoading(userId);
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -85,13 +99,18 @@ export default function AdminUsers() {
 
       if (response.ok) {
         setUsers(users.filter(user => user.id !== userId));
-        alert('User deleted successfully');
+        setTimeout(() => {
+          alert('✅ User deleted successfully');
+        }, 100);
       } else {
-        alert('Failed to delete user');
+        const errorData = await response.json();
+        alert(`❌ Failed to delete user: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('An error occurred');
+      alert('❌ Network error. Please try again.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -161,13 +180,25 @@ export default function AdminUsers() {
                 <h2 className="text-2xl font-bold text-aurora">
                   {filteredUsers.length} Users Found
                 </h2>
-                <div className="flex gap-4 text-sm">
-                  <span className="glass-coral px-3 py-1 rounded-full">
-                    👑 {users.filter(u => u.role === 'admin').length} Admins
-                  </span>
-                  <span className="glass-teal px-3 py-1 rounded-full">
-                    👤 {users.filter(u => u.role === 'user').length} Users
-                  </span>
+                <div className="flex gap-4 items-center">
+                  <button
+                    onClick={fetchUsers}
+                    disabled={loading}
+                    className="btn-aurora px-4 py-2 text-sm rounded-lg disabled:opacity-50"
+                  >
+                    {loading ? '🔄 Loading...' : '🔄 Refresh'}
+                  </button>
+                  <div className="flex gap-2 text-sm">
+                    <span className="glass-coral px-3 py-1 rounded-full">
+                      👑 {users.filter(u => u.role === 'admin').length} Admins
+                    </span>
+                    <span className="glass-teal px-3 py-1 rounded-full">
+                      👤 {users.filter(u => u.role === 'user').length} Users
+                    </span>
+                    <span className="glass-amber px-3 py-1 rounded-full">
+                      📝 {users.reduce((sum, u) => sum + (u.confession_count || 0), 0)} Total Confessions
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -208,7 +239,8 @@ export default function AdminUsers() {
                         <select
                           value={user.role}
                           onChange={(e) => handleRoleChange(user.id, e.target.value as 'user' | 'admin')}
-                          className="input-modern text-sm py-2 px-3"
+                          disabled={actionLoading === user.id}
+                          className="input-modern text-sm py-2 px-3 disabled:opacity-50"
                         >
                           <option value="user">👤 User</option>
                           <option value="admin">👑 Admin</option>
@@ -216,26 +248,35 @@ export default function AdminUsers() {
 
                         <button
                           onClick={() => handleDeleteUser(user.id)}
-                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium"
+                          disabled={actionLoading === user.id}
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                          🗑️ Delete
+                          {actionLoading === user.id ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                              Deleting...
+                            </>
+                          ) : (
+                            <>🗑️ Delete</>
+                          )}
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  {user.confession_count !== undefined && (
-                    <div className="mt-4 flex space-x-4 text-sm">
-                      <span className="glass-amber px-3 py-1 rounded-full">
-                        📝 {user.confession_count} Confessions
+                  <div className="mt-4 flex flex-wrap gap-2 text-sm">
+                    <span className="glass-amber px-3 py-1 rounded-full">
+                      📝 {user.confession_count || 0} Confessions
+                    </span>
+                    <span className="glass-emerald px-3 py-1 rounded-full">
+                      📅 Joined {formatDate(user.created_at)}
+                    </span>
+                    {user.is_banned && (
+                      <span className="bg-red-500 text-white px-3 py-1 rounded-full">
+                        🚫 Banned
                       </span>
-                      {user.last_active && (
-                        <span className="glass-emerald px-3 py-1 rounded-full">
-                          🕒 Last active: {formatDate(user.last_active)}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               ))}
 
