@@ -1,108 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { simpleDb } from '@/lib/neon-db';
+import { requireAuth } from '@/lib/auth-middleware';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-export async function GET(request: NextRequest) {
+export const GET = requireAuth(async (request: NextRequest, user: any) => {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Only admins can view reports
+    if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Get reports with related data
-    const { data: reports, error } = await supabase
-      .from('reports')
-      .select(`
-        *,
-        confessions!inner(
-          id,
-          content,
-          user_id,
-          users!inner(
-            full_name,
-            email
-          )
-        ),
-        reporter:users!reports_reported_by_fkey(
-          full_name,
-          email
-        )
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: 'Failed to fetch reports' }, { status: 500 });
-    }
-
-    // Format the response
-    const formattedReports = reports?.map(report => ({
-      id: report.id,
-      confession_id: report.confession_id,
-      reported_by: report.reported_by,
-      reason: report.reason,
-      explanation: report.explanation,
-      created_at: report.created_at,
-      confession_content: report.confessions?.content,
-      confession_author_id: report.confessions?.user_id,
-      author_name: report.confessions?.users?.full_name,
-      author_email: report.confessions?.users?.email,
-      reporter_name: report.reporter?.full_name,
-      reporter_email: report.reporter?.email
-    })) || [];
-
-    return NextResponse.json(formattedReports);
+    const reports = await simpleDb.getReports();
+    return NextResponse.json(reports);
   } catch (error) {
     console.error('Error fetching reports:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = requireAuth(async (request: NextRequest, user: any) => {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { confession_id, reason, explanation, reported_by } = await request.json();
 
     if (!confession_id || !reason || !reported_by) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Check if already reported by this user
-    const { data: existingReport } = await supabase
-      .from('reports')
-      .select('id')
-      .eq('confession_id', confession_id)
-      .eq('reported_by', reported_by)
-      .single();
-
-    if (existingReport) {
-      return NextResponse.json({ error: 'Already reported by this user' }, { status: 409 });
+    // Verify the user is reporting as themselves
+    if (reported_by !== user.id) {
+      return NextResponse.json({ error: 'Invalid reporter' }, { status: 400 });
     }
 
     // Create the report
-    const { data: report, error } = await supabase
-      .from('reports')
-      .insert({
-        confession_id,
-        reported_by,
-        reason,
-        explanation: explanation || null
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Database error:', error);
-      return NextResponse.json({ error: 'Failed to create report' }, { status: 500 });
-    }
+    const report = await simpleDb.createReport({
+      confession_id,
+      reported_by,
+      reason,
+      explanation: explanation || undefined
+    });
 
     return NextResponse.json({ 
       message: 'Report submitted successfully',
@@ -110,6 +44,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating report:', error);
+    
+    // Check if it's a duplicate report error
+    if (error instanceof Error && error.message.includes('duplicate')) {
+      return NextResponse.json({ error: 'You have already reported this confession' }, { status: 409 });
+    }
+    
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

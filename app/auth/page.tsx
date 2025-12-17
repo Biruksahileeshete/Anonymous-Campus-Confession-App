@@ -416,16 +416,17 @@ export default function AuthPage() {
             <p className="text-center text-sm mt-6" style={{ color: 'var(--text-tertiary)' }}>
               By continuing, you agree to our{' '}
               <a 
-                href="/terms" 
-                className="text-coral-500 hover:text-coral-600 transition-colors font-medium"
-                style={{ textDecoration: 'none' }}
-              >
-                Terms
-              </a>
+  href="/terms" 
+  className="text-blue-500 hover:text-blue-600 transition-colors font-medium"
+  style={{ textDecoration: 'none' }}
+>
+  Terms
+</a>
+
               {' '}and{' '}
               <a 
                 href="/privacy" 
-                className="text-coral-500 hover:text-coral-600 transition-colors font-medium"
+                className="text-blue-500 hover:text-coral-600 transition-colors font-medium"
                 style={{ textDecoration: 'none' }}
               >
                 Privacy Policy
