@@ -130,8 +130,9 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Share your thoughts on this confession..."
-            className="input-aurora resize-none h-24"
+            className="input-aurora resize-none w-full h-32 min-h-[8rem]"
             maxLength={500}
+            rows={4}
           />
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
@@ -140,9 +141,16 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
             <button
               type="submit"
               disabled={!newComment.trim() || isSubmitting}
-              className="btn-teal px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-comment-aurora"
             >
-              {isSubmitting ? 'Posting...' : 'Post Comment'}
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <div className="loading-aurora w-4 h-4"></div>
+                  Posting...
+                </span>
+              ) : (
+                'Post Comment'
+              )}
             </button>
           </div>
         </form>

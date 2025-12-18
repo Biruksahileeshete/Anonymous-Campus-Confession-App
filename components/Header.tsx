@@ -164,16 +164,18 @@ export default function Header({ user, onLogout }: HeaderProps) {
                 {/* Reload Button */}
                 <motion.button
                   onClick={handleReload}
-                  className="glass-coral p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative flex items-center justify-center"
+                  className="glass-coral p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative w-11 h-11 flex items-center justify-center"
                   title="Refresh Feed"
                   whileTap={{ scale: 0.95 }}
                   disabled={isReloading}
                 >
-                  {isReloading ? (
-                    <div className="loading-aurora w-5 h-5"></div>
-                  ) : (
-                    <RefreshCw className="w-5 h-5 text-coral-600 group-hover:text-coral-700" />
-                  )}
+                  <div className="flex items-center justify-center w-full h-full">
+                    {isReloading ? (
+                      <div className="loading-aurora w-5 h-5"></div>
+                    ) : (
+                      <RefreshCw className="w-5 h-5 text-coral-600 group-hover:text-coral-700" />
+                    )}
+                  </div>
                 </motion.button>
 
                 {/* Theme Toggle Button */}
@@ -195,27 +197,28 @@ export default function Header({ user, onLogout }: HeaderProps) {
                 </motion.button>
                 
                 {/* Notifications Button */}
-                <motion.div className="relative">
+                <motion.div className="relative overflow-visible">
                   <motion.button
                     onClick={handleNotificationClick}
-                    className="glass-teal p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative"
+                    className="glass-teal p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative overflow-visible"
                     title="Notifications"
                     whileTap={{ scale: 0.95 }}
                   >
                     <Bell className="w-5 h-5 text-teal-600 group-hover:text-teal-700" />
-                    <AnimatePresence>
-                      {unreadCount > 0 && (
-                        <motion.span
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          exit={{ scale: 0 }}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full border-2 border-white shadow-lg font-bold"
-                        >
-                          {unreadCount > 99 ? '99+' : unreadCount}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
                   </motion.button>
+                  <AnimatePresence>
+                    {unreadCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full border-2 border-white shadow-lg font-bold z-10"
+                        style={{ transform: 'translate(25%, -25%)' }}
+                      >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
 
                 {/* Profile Button */}
@@ -309,11 +312,13 @@ export default function Header({ user, onLogout }: HeaderProps) {
                 whileTap={{ scale: 0.98 }}
                 disabled={isReloading}
               >
-                {isReloading ? (
-                  <div className="loading-aurora w-5 h-5"></div>
-                ) : (
-                  <RefreshCw className="w-5 h-5 text-coral-600" />
-                )}
+                <div className="flex items-center justify-center w-5 h-5">
+                  {isReloading ? (
+                    <div className="loading-aurora w-5 h-5"></div>
+                  ) : (
+                    <RefreshCw className="w-5 h-5 text-coral-600" />
+                  )}
+                </div>
                 <span style={{ color: 'var(--text-primary)' }}>
                   {isReloading ? 'Refreshing...' : 'Refresh Feed'}
                 </span>
