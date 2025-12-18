@@ -48,12 +48,13 @@ export default function UserDashboard() {
     fetchConfessions();
   }, [router]);
 
-  const fetchConfessions = async () => {
+  const fetchConfessions = async (page = 0) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/confessions', {
+      const response = await fetch(`/api/confessions?page=${page}&limit=20`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'max-age=60' // Use browser cache for 1 minute
         }
       });
       
@@ -62,7 +63,13 @@ export default function UserDashboard() {
       }
       
       const data = await response.json();
-      setConfessions(data);
+      
+      if (page === 0) {
+        setConfessions(data);
+      } else {
+        // Append for pagination
+        setConfessions(prev => [...prev, ...data]);
+      }
     } catch (error) {
       console.error('Error fetching confessions:', error);
     } finally {

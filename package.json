@@ -13,6 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "echo \"No tests specified\" && exit 0",
+    "optimize": "node scripts/optimize-performance.js",
+    "db:optimize": "node scripts/optimize-performance.js",
     "deploy": "vercel --prod",
     "db:migrate": "node scripts/migrate.js",
     "db:seed": "node scripts/seed.js",

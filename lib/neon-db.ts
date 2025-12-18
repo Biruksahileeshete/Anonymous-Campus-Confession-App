@@ -1,6 +1,15 @@
 import { Pool, Client } from 'pg';
 
-// Simple connection function for Neon
+// Connection pool for better performance
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 20, // Maximum number of connections
+  idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+  connectionTimeoutMillis: 2000, // Return error after 2 seconds if connection cannot be established
+});
+
+// Simple connection function for Neon (legacy support)
 export async function connectToNeon() {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
@@ -11,15 +20,26 @@ export async function connectToNeon() {
   return client;
 }
 
-// Simple query function
+// Optimized query function using connection pool
 export async function queryNeon(text: string, params?: any[]) {
-  const client = await connectToNeon();
+  const client = await pool.connect();
   
   try {
     const result = await client.query(text, params);
     return result;
   } finally {
-    await client.end();
+    client.release(); // Return connection to pool instead of closing
+  }
+}
+
+// Fast query function for simple queries
+export async function fastQuery(text: string, params?: any[]) {
+  try {
+    const result = await pool.query(text, params);
+    return result;
+  } catch (error) {
+    console.error('Fast query error:', error);
+    throw error;
   }
 }
 
@@ -66,10 +86,15 @@ export class SimpleDatabase {
   }
 
   async getConfessions(limit = 50, offset = 0) {
-    const result = await queryNeon(`
+    const result = await fastQuery(`
       SELECT 
-        c.*,
-        u.full_name as author_name
+        c.id,
+        c.content,
+        c.created_at,
+        c.updated_at,
+        c.reaction_counts,
+        u.full_name as author_name,
+        (SELECT COUNT(*) FROM comments WHERE confession_id = c.id) as comment_count
       FROM confessions c
       LEFT JOIN users u ON c.author_id = u.id
       WHERE c.is_hidden = false
@@ -83,6 +108,7 @@ export class SimpleDatabase {
       reaction_counts: typeof row.reaction_counts === 'string' 
         ? JSON.parse(row.reaction_counts) 
         : row.reaction_counts || {},
+      comment_count: parseInt(row.comment_count) || 0,
       // Ensure created_at is properly formatted as ISO string
       created_at: row.created_at instanceof Date 
         ? row.created_at.toISOString() 
@@ -116,12 +142,16 @@ export class SimpleDatabase {
   }
 
   async getCommentsByConfessionId(confessionId: string) {
-    const result = await queryNeon(`
-      SELECT c.*, u.full_name as author_name
+    const result = await fastQuery(`
+      SELECT 
+        c.id,
+        c.content,
+        c.created_at,
+        'Anonymous' as author_name
       FROM comments c
-      LEFT JOIN users u ON c.author_id = u.id
       WHERE c.confession_id = $1
       ORDER BY c.created_at ASC
+      LIMIT 100
     `, [confessionId]);
     
     // Ensure proper timestamp format for comments
