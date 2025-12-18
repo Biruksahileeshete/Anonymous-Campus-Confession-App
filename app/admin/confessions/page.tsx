@@ -92,7 +92,7 @@ export default function AdminConfessions() {
           <div className="mb-8 animate-slideInUp">
             <div className="flex items-center space-x-4 mb-4">
               <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/30">
-                <MessageSquare className="w-8 h-8 text-white drop-shadow-lg" />
+                <MessageSquare className="w-7 h-8 text-white drop-shadow-lg" />
               </div>
               <div>
                 <h1 className="text-4xl font-bold text-aurora">Confession Management</h1>
