@@ -39,8 +39,12 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted!', { newComment, isSubmitting });
     
-    if (!newComment.trim() || isSubmitting) return;
+    if (!newComment.trim() || isSubmitting) {
+      console.log('Submission blocked:', { hasContent: !!newComment.trim(), isSubmitting });
+      return;
+    }
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -49,6 +53,7 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
     }
 
     setIsSubmitting(true);
+    console.log('Starting comment submission...');
     
     try {
       const response = await fetch('/api/comments', {
@@ -63,12 +68,17 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
         }),
       });
 
+      console.log('API response:', response.status, response.ok);
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('Comment posted successfully:', result);
         setNewComment('');
         fetchComments(); // Refresh comments
         onCommentAdded?.(); // Update comment count in parent
       } else {
         const errorData = await response.json();
+        console.error('API error:', errorData);
         alert(errorData.error || 'Failed to post comment');
       }
     } catch (error) {
@@ -125,35 +135,45 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
     <div className="space-y-6">
       {/* Comment Form */}
       {localStorage.getItem('token') && (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Share your thoughts on this confession..."
-            className="input-aurora resize-none w-full h-32 min-h-[8rem]"
-            maxLength={500}
-            rows={4}
-          />
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
-              {newComment.length}/500 characters
-            </span>
-            <button
-              type="submit"
-              disabled={!newComment.trim() || isSubmitting}
-              className="btn-comment-aurora"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <div className="loading-aurora w-4 h-4"></div>
-                  Posting...
-                </span>
-              ) : (
-                'Post Comment'
-              )}
-            </button>
-          </div>
-        </form>
+        <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Share your thoughts on this confession..."
+              className="input-aurora resize-none w-full h-32 min-h-[8rem]"
+              maxLength={500}
+              rows={4}
+            />
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
+                {newComment.length}/500 characters
+              </span>
+              <button
+                type="submit"
+                disabled={!newComment.trim() || isSubmitting}
+                className="btn-comment-aurora"
+                onClick={(e) => {
+                  console.log('Button clicked!', { hasContent: !!newComment.trim(), isSubmitting });
+                  if (!newComment.trim() || isSubmitting) {
+                    e.preventDefault();
+                    return;
+                  }
+                  // Let form submission handle the rest
+                }}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="loading-aurora w-4 h-4"></div>
+                    Posting...
+                  </span>
+                ) : (
+                  'Post Comment'
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
       {/* Comments List */}

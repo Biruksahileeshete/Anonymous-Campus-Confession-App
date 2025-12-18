@@ -361,6 +361,14 @@ a, button, [role="button"] {
   transition: all 0.3s ease;
   border: none;
   cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 120px;
 }
 
 .btn-comment-aurora:hover:not(:disabled) {
@@ -379,6 +387,7 @@ a, button, [role="button"] {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  pointer-events: none;
 }
 
 /* Circular Button Styling */
