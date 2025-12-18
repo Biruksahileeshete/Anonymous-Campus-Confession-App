@@ -2,31 +2,14 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
+  "installCommand": "npm install",
   "functions": {
     "app/api/**/*.ts": {
-      "maxDuration": 10
+      "maxDuration": 30
     }
   },
+  "regions": ["iad1"],
   "env": {
     "NODE_ENV": "production"
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
-    }
-  ]
+  }
 }
