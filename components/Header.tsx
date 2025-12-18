@@ -376,17 +376,6 @@ export default function Header({ user, onLogout }: HeaderProps) {
         </AnimatePresence>
       </div>
 
-      {/* Loading Overlay for Reload */}
-      {isReloading && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
-          <div className="card-aurora p-12 max-w-md mx-auto text-center">
-            <div className="loading-aurora mx-auto mb-4"></div>
-            <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>
-              Refreshing page...
-            </p>
-          </div>
-        </div>
-      )}
     </motion.header>
   );
 }
