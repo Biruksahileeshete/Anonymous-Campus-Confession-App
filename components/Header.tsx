@@ -164,11 +164,16 @@ export default function Header({ user, onLogout }: HeaderProps) {
                 {/* Reload Button */}
                 <motion.button
                   onClick={handleReload}
-                  className="glass-coral p-3 rounded-2xl hover:scale-105 transition-all duration-300 group"
+                  className="glass-coral p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative flex items-center justify-center"
                   title="Refresh Feed"
                   whileTap={{ scale: 0.95 }}
+                  disabled={isReloading}
                 >
-                  <RefreshCw className="w-5 h-5 text-coral-600 group-hover:text-coral-700" />
+                  {isReloading ? (
+                    <div className="loading-aurora w-5 h-5"></div>
+                  ) : (
+                    <RefreshCw className="w-5 h-5 text-coral-600 group-hover:text-coral-700" />
+                  )}
                 </motion.button>
 
                 {/* Theme Toggle Button */}
@@ -302,9 +307,16 @@ export default function Header({ user, onLogout }: HeaderProps) {
                 className="w-full glass-coral px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                disabled={isReloading}
               >
-                <RefreshCw className="w-5 h-5 text-coral-600" />
-                <span style={{ color: 'var(--text-primary)' }}>Refresh Feed</span>
+                {isReloading ? (
+                  <div className="loading-aurora w-5 h-5"></div>
+                ) : (
+                  <RefreshCw className="w-5 h-5 text-coral-600" />
+                )}
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {isReloading ? 'Refreshing...' : 'Refresh Feed'}
+                </span>
               </motion.button>
               
               <motion.button
@@ -362,7 +374,12 @@ export default function Header({ user, onLogout }: HeaderProps) {
       {/* Loading Overlay for Reload */}
       {isReloading && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
-          <LoadingSpinner message="Refreshing page..." size="md" />
+          <div className="card-aurora p-12 max-w-md mx-auto text-center">
+            <div className="loading-aurora mx-auto mb-4"></div>
+            <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>
+              Refreshing page...
+            </p>
+          </div>
         </div>
       )}
     </motion.header>
