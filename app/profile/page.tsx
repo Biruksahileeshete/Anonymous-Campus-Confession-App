@@ -104,10 +104,10 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="card-aurora p-8 rounded-3xl animate-glow">
-          <div className="animate-spin rounded-full h-20 w-20 border-4 border-transparent border-t-coral-500 mx-auto"></div>
-          <p className="mt-6 text-center text-xl font-semibold" style={{ color: 'var(--text-secondary)' }}>
-            🚀 Loading Aurora Profile...
+        <div className="card-aurora p-12 max-w-md mx-auto">
+          <div className="loading-aurora mx-auto mb-4"></div>
+          <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>
+            Loading profile...
           </p>
         </div>
       </div>
@@ -258,11 +258,11 @@ export default function ProfilePage() {
             >
               {loading ? (
                 <div className="flex items-center justify-center space-x-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-3 border-transparent border-t-current"></div>
-                  <span>🚀 Updating...</span>
+                  <div className="loading-aurora w-6 h-6"></div>
+                  <span>Updating...</span>
                 </div>
               ) : (
-                <span>💾 Save Changes</span>
+                <span>Save Changes</span>
               )}
             </button>
           </form>

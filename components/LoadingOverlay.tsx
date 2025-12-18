@@ -92,11 +92,11 @@ export default function LoadingOverlay() {
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[9999] flex items-center justify-center">
-      <div className="card-aurora p-6 rounded-2xl text-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-coral-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-          <span className="text-2xl text-white">✨</span>
-        </div>
-        <h3 className="text-lg font-bold text-aurora">Loading...</h3>
+      <div className="card-aurora p-12 max-w-md mx-auto">
+        <div className="loading-aurora mx-auto mb-4"></div>
+        <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>
+          Loading...
+        </p>
       </div>
     </div>
   );

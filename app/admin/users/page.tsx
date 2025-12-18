@@ -273,7 +273,7 @@ export default function AdminUsers() {
                         >
                           {actionLoading === user.id ? (
                             <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                              <div className="loading-aurora w-4 h-4"></div>
                               Deleting...
                             </>
                           ) : (

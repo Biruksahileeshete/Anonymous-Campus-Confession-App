@@ -81,16 +81,12 @@ export default function UserDashboard() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <motion.div 
-          className="card-aurora p-12 max-w-md mx-auto text-center"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="loading-aurora mx-auto mb-6"></div>
-          <h3 className="text-xl font-bold text-aurora mb-2">Loading Aurora</h3>
-          <p style={{ color: 'var(--text-secondary)' }}>Preparing your magical experience...</p>
-        </motion.div>
+        <div className="card-aurora p-12 max-w-md mx-auto">
+          <div className="loading-aurora mx-auto mb-4"></div>
+          <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>
+            Loading dashboard...
+          </p>
+        </div>
       </div>
     );
   }
@@ -146,20 +142,14 @@ export default function UserDashboard() {
         {/* Confessions Feed */}
         <AnimatePresence mode="wait">
           {loading ? (
-            <motion.div 
-              className="text-center py-20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="card-aurora p-16 max-w-lg mx-auto">
-                <div className="loading-aurora mx-auto mb-6"></div>
-                <h3 className="text-2xl font-bold text-aurora mb-3">Gathering Aurora Stories</h3>
-                <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>
-                  Collecting the most beautiful confessions from across the cosmos...
+            <div className="text-center py-16">
+              <div className="card-aurora p-12 max-w-md mx-auto">
+                <div className="loading-aurora mx-auto mb-4"></div>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                  Loading confessions...
                 </p>
               </div>
-            </motion.div>
+            </div>
           ) : confessions.length === 0 ? (
             <motion.div 
               className="text-center py-20"

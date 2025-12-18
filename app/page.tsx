@@ -25,8 +25,13 @@ export default function Home() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-16 w-16 border-4 border-white/30 border-t-white"></div>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="card-aurora p-12 max-w-md mx-auto">
+        <div className="loading-aurora mx-auto mb-4"></div>
+        <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>
+          Loading...
+        </p>
+      </div>
     </div>
   );
 }

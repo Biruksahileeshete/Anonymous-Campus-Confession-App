@@ -169,14 +169,12 @@ export default function ConfessionPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="absolute -inset-2 border-2 border-purple-500/20 border-t-purple-500 rounded-full"
-          />
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card-aurora p-12 max-w-md mx-auto">
+          <div className="loading-aurora mx-auto mb-4"></div>
+          <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>
+            Loading confession...
+          </p>
         </div>
       </div>
     );

@@ -16,6 +16,7 @@ import {
   Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoadingSpinner from './LoadingSpinner';
 
 interface User {
   id: string;
@@ -37,6 +38,7 @@ export default function Header({ user, onLogout }: HeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
 
   // Ensure component is mounted before accessing theme
   useEffect(() => {
@@ -81,7 +83,11 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
   // Button functionality handlers
   const handleReload = () => {
-    window.location.reload();
+    setIsReloading(true);
+    // Small delay to show loading state before reload
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
   };
 
   const handleToggleTheme = () => {
@@ -352,6 +358,13 @@ export default function Header({ user, onLogout }: HeaderProps) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Loading Overlay for Reload */}
+      {isReloading && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center">
+          <LoadingSpinner message="Refreshing page..." size="md" />
+        </div>
+      )}
     </motion.header>
   );
 }

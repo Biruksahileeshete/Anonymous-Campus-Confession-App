@@ -148,10 +148,10 @@ export default function NotificationsPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <div className="card-aurora p-12">
+          <div className="text-center py-16">
+            <div className="card-aurora p-12 max-w-md mx-auto">
               <div className="loading-aurora mx-auto mb-4"></div>
-              <p style={{ color: 'var(--text-secondary)' }}>Loading notifications...</p>
+              <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading notifications...</p>
             </div>
           </div>
         ) : notifications.length === 0 ? (

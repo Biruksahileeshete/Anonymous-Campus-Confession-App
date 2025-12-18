@@ -363,6 +363,42 @@ a, button, [role="button"] {
   animation: spin 1s linear infinite;
 }
 
+.loading-aurora {
+  width: 60px;
+  height: 60px;
+  border: 4px solid transparent;
+  border-top: 4px solid var(--coral-500);
+  border-right: 4px solid var(--teal-500);
+  border-radius: 50%;
+  animation: aurora-spin 1s linear infinite;
+}
+
+@keyframes aurora-spin {
+  0% {
+    transform: rotate(0deg);
+    border-top-color: var(--coral-500);
+    border-right-color: var(--teal-500);
+  }
+  25% {
+    border-top-color: var(--teal-500);
+    border-right-color: var(--amber-500);
+  }
+  50% {
+    transform: rotate(180deg);
+    border-top-color: var(--amber-500);
+    border-right-color: var(--emerald-500);
+  }
+  75% {
+    border-top-color: var(--emerald-500);
+    border-right-color: var(--coral-500);
+  }
+  100% {
+    transform: rotate(360deg);
+    border-top-color: var(--coral-500);
+    border-right-color: var(--teal-500);
+  }
+}
+
 /* Link Loading States */
 a, button {
   position: relative;
