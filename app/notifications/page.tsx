@@ -21,6 +21,34 @@ export default function NotificationsPage() {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/notifications', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data);
+        try { 
+          localStorage.setItem('notifications_cache_full', JSON.stringify({ 
+            notifications: data, 
+            ts: Date.now() 
+          })); 
+        } catch (e) {
+          console.warn('Failed to cache notifications:', e);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setNotifications, setLoading]); // ✅ Added dependencies
+
   useEffect(() => {
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
@@ -43,7 +71,9 @@ export default function NotificationsPage() {
           setLoading(false);
         }
       }
-    } catch {}
+    } catch (e) {
+      console.warn('Failed to load cache:', e);
+    }
 
     // fetch fresh in background
     fetchNotifications();
@@ -55,28 +85,7 @@ export default function NotificationsPage() {
     };
     window.addEventListener('aurora:refresh', onRefresh as EventListener);
     return () => window.removeEventListener('aurora:refresh', onRefresh as EventListener);
-  }, [router, fetchNotifications]);
-
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/notifications', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data);
-        try { localStorage.setItem('notifications_cache_full', JSON.stringify({ notifications: data, ts: Date.now() })); } catch {}
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  }, [router, fetchNotifications]); // ✅ fetchNotifications is now defined
 
   const markAsRead = useCallback(async (notificationId: string) => {
     // optimistic update
@@ -97,10 +106,14 @@ export default function NotificationsPage() {
         const cached = localStorage.getItem('notifications_cache_full');
         if (cached) {
           const parsed = JSON.parse(cached);
-          parsed.notifications = parsed.notifications.map((n: Notification) => n.id === notificationId ? { ...n, is_read: true } : n);
+          parsed.notifications = parsed.notifications.map((n: Notification) => 
+            n.id === notificationId ? { ...n, is_read: true } : n
+          );
           localStorage.setItem('notifications_cache_full', JSON.stringify(parsed));
         }
-      } catch {}
+      } catch (e) {
+        console.warn('Failed to update cache:', e);
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error);
       // revert optimistic update on error
@@ -167,12 +180,13 @@ export default function NotificationsPage() {
           </div>
           <button
             onClick={fetchNotifications}
-            className="btn-teal px-6 py-3 rounded-2xl flex items-center space-x-2"
+            disabled={loading}
+            className="btn-teal px-6 py-3 rounded-2xl flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0V9a8 8 0 1115.356 2M15 15v5h-.582M8.644 21A8.001 8.001 0 0019.418 15m0 0V15a8 8 0 00-15.356-2" />
             </svg>
-            <span>Refresh</span>
+            <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
           </button>
         </div>
 
@@ -194,7 +208,7 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <div 
                 key={notification.id} 
-                className={`glass rounded-2xl p-6 backdrop-blur-lg border-l-4 ${
+                className={`glass rounded-2xl p-6 backdrop-blur-lg border-l-4 cursor-pointer transition-all hover:scale-[1.02] ${
                   notification.is_read ? 'opacity-70' : ''
                 } ${getNotificationColor(notification.type)}`}
                 onClick={() => !notification.is_read && markAsRead(notification.id)}
@@ -208,7 +222,7 @@ export default function NotificationsPage() {
                     </div>
                   </div>
                   {!notification.is_read && (
-                    <span className="w-3 h-3 bg-blue-500 rounded-full"></span>
+                    <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></span>
                   )}
                 </div>
 
@@ -228,7 +242,7 @@ export default function NotificationsPage() {
                       e.stopPropagation();
                       markAsRead(notification.id);
                     }}
-                    className="mt-3 text-blue-300 hover:text-blue-200 text-sm font-medium"
+                    className="mt-3 text-blue-300 hover:text-blue-200 text-sm font-medium transition-colors"
                   >
                     Mark as read
                   </button>

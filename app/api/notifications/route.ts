@@ -8,7 +8,7 @@ export const GET = requireAuth(async (request: NextRequest, user: any) => {
     return NextResponse.json(notifications);
   } catch (error) {
     console.error('Error fetching notifications:', error);
-    return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Failed to fetch notifications' }, { status: 500 });
   }
 });
 
@@ -24,6 +24,6 @@ export const PUT = requireAuth(async (request: NextRequest, user: any) => {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error marking notification as read:', error);
-    return NextResponse.json({ error: 'Failed to mark notification as read' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Failed to mark notification as read' }, { status: 500 });
   }
 });

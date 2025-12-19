@@ -89,9 +89,17 @@ export default function ReactionButtons({
         }, 100);
         
       } else {
-        const errorData = await response.json();
-        console.error('Reaction error:', errorData);
-        alert(errorData.error || 'Failed to update reaction');
+          let errorText = 'Failed to update reaction';
+          try {
+            const errorData = await response.json();
+            console.error('Reaction error:', errorData);
+            errorText = errorData.error || JSON.stringify(errorData) || errorText;
+          } catch (e) {
+            // fallback to status text
+            console.error('Reaction non-json error, status:', response.status, response.statusText);
+            errorText = response.statusText || errorText;
+          }
+          alert(errorText);
       }
     } catch (error) {
       console.error('Error updating reaction:', error);

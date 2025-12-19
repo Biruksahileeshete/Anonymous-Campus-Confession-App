@@ -15,7 +15,7 @@ export const GET = requireAuth(async (request: NextRequest, user: any) => {
     return NextResponse.json({ userReactions });
   } catch (error) {
     console.error('Error fetching reactions:', error);
-    return NextResponse.json({ error: 'Failed to fetch reactions' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Failed to fetch reactions' }, { status: 500 });
   }
 });
 
@@ -59,7 +59,7 @@ export const POST = requireAuth(async (request: NextRequest, user: any) => {
     });
   } catch (error) {
     console.error('Error creating reaction:', error);
-    return NextResponse.json({ error: 'Failed to create reaction' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Failed to create reaction' }, { status: 500 });
   }
 });
 
@@ -77,6 +77,6 @@ export const DELETE = requireAuth(async (request: NextRequest, user: any) => {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting reaction:', error);
-    return NextResponse.json({ error: 'Failed to delete reaction' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Failed to delete reaction' }, { status: 500 });
   }
 });

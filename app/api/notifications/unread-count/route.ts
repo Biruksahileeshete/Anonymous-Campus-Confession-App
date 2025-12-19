@@ -8,6 +8,6 @@ export const GET = requireAuth(async (request: NextRequest, user: any) => {
     return NextResponse.json({ count });
   } catch (error) {
     console.error('Error fetching unread count:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || 'Internal server error' }, { status: 500 });
   }
 });
