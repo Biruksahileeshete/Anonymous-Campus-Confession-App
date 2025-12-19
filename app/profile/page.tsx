@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 
@@ -49,7 +49,22 @@ export default function ProfilePage() {
       ...prev,
       fullName: parsedUser.full_name || ''
     }));
-  }, [router]);
+  }, [router, mounted]);
+
+  // Listen for global refresh events (triggered by header reload)
+  useEffect(() => {
+    const onRefresh = () => {
+      if (typeof window === 'undefined') return;
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch {}
+      }
+    };
+    window.addEventListener('aurora:refresh', onRefresh as EventListener);
+    return () => window.removeEventListener('aurora:refresh', onRefresh as EventListener);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -57,6 +72,11 @@ export default function ProfilePage() {
       [e.target.name]: e.target.value
     }));
   };
+
+  const setLocalUser = useCallback((u: any) => {
+    try { localStorage.setItem('user', JSON.stringify(u)); } catch {}
+    setUser(u);
+  }, []);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +88,12 @@ export default function ProfilePage() {
 
     try {
       const token = localStorage.getItem('token');
+
+      // optimistic UI: update local user immediately
+      const optimisticUser = { ...user, full_name: formData.fullName };
+      setLocalUser(optimisticUser);
+      setSuccess('Profile updated successfully!');
+
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
@@ -84,16 +110,15 @@ export default function ProfilePage() {
       const data = await response.json();
 
       if (!response.ok) {
+        // revert optimistic update
+        setLocalUser(user);
         throw new Error(data.error || 'Failed to update profile');
       }
 
-      // Update local storage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-      setUser(data.user);
+      // ensure authoritative user from server
+      setLocalUser(data.user);
       setSuccess('Profile updated successfully!');
-      
+
       // Clear password fields
       setFormData(prev => ({
         ...prev,

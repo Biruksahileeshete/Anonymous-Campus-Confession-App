@@ -11,7 +11,7 @@ const nextConfig = {
   },
 
   // Move serverComponentsExternalPackages to root level
-  serverExternalPackages: ['pg', 'bcryptjs', 'next-auth'],
+  serverExternalPackages: ['pg', 'bcryptjs'],
 
   // Optimize webpack configuration
   webpack: (config, { isServer, dev }) => {

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from './ThemeProvider';
 import { 
@@ -31,7 +31,7 @@ interface HeaderProps {
   onLogout?: () => void;
 }
 
-export default function Header({ user, onLogout }: HeaderProps) {
+function Header({ user, onLogout }: HeaderProps) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,8 +55,20 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
   useEffect(() => {
     if (user) {
+      // hydrate from cache first for instant UI
+      const cached = localStorage.getItem('notifications_cache');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.unreadCount != null) setUnreadCount(parsed.unreadCount);
+        } catch {}
+      }
+
       fetchUnreadCount();
-      const interval = setInterval(fetchUnreadCount, 30000);
+      const interval = setInterval(() => {
+        // only poll when tab is visible
+        if (document.visibilityState === 'visible') fetchUnreadCount();
+      }, 30000);
       return () => clearInterval(interval);
     }
   }, [user]);
@@ -74,7 +86,10 @@ export default function Header({ user, onLogout }: HeaderProps) {
 
       if (response.ok) {
         const data = await response.json();
-        setUnreadCount(data.count || 0);
+        const count = data.count || 0;
+        setUnreadCount(count);
+        // cache for instant hydration elsewhere
+        try { localStorage.setItem('notifications_cache', JSON.stringify({ unreadCount: count, ts: Date.now() })); } catch {}
       }
     } catch (error) {
       console.error('Error fetching unread count:', error);
@@ -82,20 +97,22 @@ export default function Header({ user, onLogout }: HeaderProps) {
   };
 
   // Button functionality handlers
-  const handleReload = () => {
+  const handleReload = useCallback(() => {
     setIsReloading(true);
-    // Small delay to show loading state before reload
-    setTimeout(() => {
-      window.location.reload();
-    }, 300);
-  };
+    // dispatch a global refresh event so pages can re-fetch quickly
+    try {
+      window.dispatchEvent(new Event('aurora:refresh'));
+    } catch {}
+    // keep the loading state visible briefly for animation
+    setTimeout(() => setIsReloading(false), 800);
+  }, []);
 
-  const handleToggleTheme = () => {
+  const handleToggleTheme = useCallback(() => {
     if (!mounted) return;
     toggleTheme();
-  };
+  }, [mounted, toggleTheme]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     // Clear user data
     localStorage.removeItem('user');
     localStorage.removeItem('token');
@@ -107,16 +124,17 @@ export default function Header({ user, onLogout }: HeaderProps) {
       // Fallback navigation
       router.push('/auth');
     }
-  };
+  }, [onLogout, router]);
 
-  const handleProfileClick = () => {
+  const handleProfileClick = useCallback(() => {
     router.push('/profile');
-  };
+  }, [router]);
 
-  const handleNotificationClick = () => {
+  const handleNotificationClick = useCallback(() => {
     setUnreadCount(0); // Clear unread count
+    try { localStorage.setItem('notifications_cache', JSON.stringify({ unreadCount: 0, ts: Date.now() })); } catch {}
     router.push('/notifications');
-  };
+  }, [router]);
 
   return (
     <motion.header 
@@ -379,3 +397,5 @@ export default function Header({ user, onLogout }: HeaderProps) {
     </motion.header>
   );
 }
+
+  export default (React.memo(Header) as unknown) as typeof Header;

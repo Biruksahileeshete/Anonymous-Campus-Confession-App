@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 
@@ -24,17 +24,40 @@ export default function NotificationsPage() {
   useEffect(() => {
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    
+
     if (!userData || !token) {
       router.push('/auth');
       return;
     }
 
-    setUser(JSON.parse(userData));
-    fetchNotifications();
-  }, [router]);
+    const parsed = JSON.parse(userData);
+    setUser(parsed);
 
-  const fetchNotifications = async () => {
+    // show cached notifications first for instant UI
+    try {
+      const cached = localStorage.getItem('notifications_cache_full');
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        if (Array.isArray(parsedCache.notifications)) {
+          setNotifications(parsedCache.notifications);
+          setLoading(false);
+        }
+      }
+    } catch {}
+
+    // fetch fresh in background
+    fetchNotifications();
+
+    // listen for global refresh events
+    const onRefresh = () => {
+      setLoading(true);
+      fetchNotifications();
+    };
+    window.addEventListener('aurora:refresh', onRefresh as EventListener);
+    return () => window.removeEventListener('aurora:refresh', onRefresh as EventListener);
+  }, [router, fetchNotifications]);
+
+  const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('/api/notifications', {
@@ -46,15 +69,18 @@ export default function NotificationsPage() {
       if (response.ok) {
         const data = await response.json();
         setNotifications(data);
+        try { localStorage.setItem('notifications_cache_full', JSON.stringify({ notifications: data, ts: Date.now() })); } catch {}
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const markAsRead = async (notificationId: string) => {
+  const markAsRead = useCallback(async (notificationId: string) => {
+    // optimistic update
+    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n));
     try {
       const token = localStorage.getItem('token');
       await fetch('/api/notifications', {
@@ -66,18 +92,21 @@ export default function NotificationsPage() {
         body: JSON.stringify({ notificationId })
       });
 
-      // Update local state
-      setNotifications(prev => 
-        prev.map(notif => 
-          notif.id === notificationId 
-            ? { ...notif, is_read: true }
-            : notif
-        )
-      );
+      // update cache
+      try {
+        const cached = localStorage.getItem('notifications_cache_full');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          parsed.notifications = parsed.notifications.map((n: Notification) => n.id === notificationId ? { ...n, is_read: true } : n);
+          localStorage.setItem('notifications_cache_full', JSON.stringify(parsed));
+        }
+      } catch {}
     } catch (error) {
       console.error('Error marking notification as read:', error);
+      // revert optimistic update on error
+      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, is_read: false } : n));
     }
-  };
+  }, []);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {

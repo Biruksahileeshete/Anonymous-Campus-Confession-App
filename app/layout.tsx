@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import SessionProvider from '@/components/SessionProvider';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import LoadingOverlay from '@/components/LoadingOverlay';
+import Providers from '@/components/Providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,12 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider>
-          <SessionProvider>
-            <LoadingOverlay />
-            {children}
-          </SessionProvider>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -212,13 +212,10 @@ body {
 }
 
 /* Google Sign-In - Light Mode Only */
-.block.dark\\:hidden {
+.google-signin {
   display: block;
 }
 
-[data-theme="dark"] .block.dark\\:hidden {
-  display: none;
-}
 
 /* Remove Horizontal Lines */
 hr, .divider {
