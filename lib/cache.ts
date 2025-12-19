@@ -45,21 +45,33 @@ class SimpleCache {
   // Delete all keys that match a pattern
   deletePattern(pattern: string) {
     const regex = new RegExp(pattern);
-    for (const key of this.cache.keys()) {
+    const keysToDelete: string[] = [];
+    
+    this.cache.forEach((_, key) => {
       if (regex.test(key)) {
-        this.cache.delete(key);
+        keysToDelete.push(key);
       }
-    }
+    });
+    
+    keysToDelete.forEach(key => {
+      this.cache.delete(key);
+    });
   }
 
   // Clean up expired entries
   private cleanup() {
     const now = Date.now();
-    for (const [key, item] of this.cache.entries()) {
+    const keysToDelete: string[] = [];
+    
+    this.cache.forEach((item, key) => {
       if (now - item.timestamp > item.ttl) {
-        this.cache.delete(key);
+        keysToDelete.push(key);
       }
-    }
+    });
+    
+    keysToDelete.forEach(key => {
+      this.cache.delete(key);
+    });
   }
 
   // Get cache stats
