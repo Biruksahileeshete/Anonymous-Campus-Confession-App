@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
-import { Flag, AlertTriangle, Spam, MessageSquare, Eye, EyeOff, UserX, AlertCircle, CheckCircle } from 'lucide-react';
+import { Flag, AlertTriangle, Shield, MessageSquare, Eye, EyeOff, UserX, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface Report {
   id: string;
