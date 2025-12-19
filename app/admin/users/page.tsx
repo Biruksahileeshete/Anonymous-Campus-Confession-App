@@ -1,8 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import AdminSidebar from '@/components/AdminSidebar';
+import dynamic from 'next/dynamic';
 import { Users, Search, RefreshCw, Crown, User, FileText, Calendar, Ban, Trash2 } from 'lucide-react';
+
+// Dynamically import AdminSidebar to avoid SSR issues
+const AdminSidebar = dynamic(() => import('@/components/AdminSidebar'), {
+  ssr: false,
+  loading: () => <div className="w-64 h-screen bg-gray-100 animate-pulse" />
+});
 
 interface User {
   id: string;
@@ -23,12 +29,21 @@ export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    fetchUsers();
+    setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (mounted) {
+      fetchUsers();
+    }
+  }, [mounted]);
+
   const fetchUsers = async () => {
+    if (typeof window === 'undefined') return;
+    
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('/api/admin/users', {
@@ -52,6 +67,8 @@ export default function AdminUsers() {
   };
 
   const handleRoleChange = async (userId: string, newRole: 'user' | 'admin') => {
+    if (typeof window === 'undefined') return;
+    
     setActionLoading(userId);
     try {
       const token = localStorage.getItem('token');
@@ -85,6 +102,8 @@ export default function AdminUsers() {
   };
 
   const handleDeleteUser = async (userId: string) => {
+    if (typeof window === 'undefined') return;
+    
     const user = users.find(u => u.id === userId);
     if (!confirm(`⚠️ Are you sure you want to delete "${user?.full_name}"?\n\nThis will permanently delete:\n• User account\n• All their confessions\n• All their comments\n• All their reactions\n\nThis action CANNOT be undone!`)) {
       return;
@@ -132,6 +151,20 @@ export default function AdminUsers() {
       day: 'numeric'
     });
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen">
+        <div className="w-64 h-screen bg-gray-100 animate-pulse" />
+        <div className="flex-1 ml-64 p-8">
+          <div className="card-aurora p-12 text-center">
+            <div className="loading-aurora mx-auto mb-4"></div>
+            <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">

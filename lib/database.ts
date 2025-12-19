@@ -11,11 +11,6 @@ export function getPool() {
       max: 5, // Reduced pool size for Neon
       idleTimeoutMillis: 60000, // Increased timeout
       connectionTimeoutMillis: 10000, // Increased timeout
-      acquireTimeoutMillis: 10000,
-      createTimeoutMillis: 10000,
-      destroyTimeoutMillis: 5000,
-      reapIntervalMillis: 1000,
-      createRetryIntervalMillis: 200,
     });
 
     // Handle pool errors

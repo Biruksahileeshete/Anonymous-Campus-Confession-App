@@ -1,16 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable faster builds
-  swcMinify: true,
-  
   experimental: {
     // Enable build worker for faster compilation
     webpackBuildWorker: true,
-    // Optimize server components
-    serverComponentsExternalPackages: ['pg', 'bcryptjs', 'next-auth'],
     // Enable optimized package imports
     optimizePackageImports: ['react', 'react-dom'],
   },
+
+  // Move serverComponentsExternalPackages to root level
+  serverExternalPackages: ['pg', 'bcryptjs', 'next-auth'],
 
   // Optimize webpack configuration
   webpack: (config, { isServer, dev }) => {
