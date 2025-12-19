@@ -12,6 +12,8 @@ interface User {
   role: 'user' | 'admin';
 }
 
+// Force dynamic rendering
+
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
@@ -23,9 +25,16 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
+    
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     
@@ -55,6 +64,8 @@ export default function ProfilePage() {
     setError('');
     setSuccess('');
 
+    if (typeof window === 'undefined') return;
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('/api/user/profile', {
@@ -77,7 +88,9 @@ export default function ProfilePage() {
       }
 
       // Update local storage
-      localStorage.setItem('user', JSON.stringify(data.user));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
       setUser(data.user);
       setSuccess('Profile updated successfully!');
       
@@ -96,10 +109,23 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }
     router.push('/auth');
   };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card-aurora p-12 max-w-md mx-auto">
+          <div className="loading-aurora mx-auto mb-4"></div>
+          <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (

@@ -19,6 +19,10 @@ export const viewport = {
   initialScale: 1,
 };
 
+// Force dynamic rendering for all pages
+export const dynamic = 'force-dynamic';
+export const revalidate = false;
+
 export default function RootLayout({
   children,
 }: {

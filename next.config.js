@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Disable static generation for all pages to avoid SSR issues
+  trailingSlash: false,
+  
   experimental: {
     // Enable build worker for faster compilation
     webpackBuildWorker: true,

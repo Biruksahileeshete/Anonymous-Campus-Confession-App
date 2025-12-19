@@ -1,14 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import AdminSidebar from '@/components/AdminSidebar';
 import { Flag, AlertTriangle, Shield, MessageSquare, Eye, EyeOff, UserX, AlertCircle, CheckCircle } from 'lucide-react';
-
-// Dynamically import AdminSidebar to avoid SSR issues
-const AdminSidebar = dynamic(() => import('@/components/AdminSidebar'), {
-  ssr: false,
-  loading: () => <div className="w-64 h-screen bg-gray-100 animate-pulse" />
-});
 
 interface Report {
   id: string;
@@ -25,14 +19,11 @@ interface Report {
   author_email?: string;
 }
 
+// Force dynamic rendering
+
 export default function AdminReports() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleAdminAction = async (action: string, targetId: string) => {
     if (typeof window === 'undefined') return;
@@ -66,10 +57,8 @@ export default function AdminReports() {
   };
 
   useEffect(() => {
-    if (mounted) {
-      fetchReports();
-    }
-  }, [mounted]);
+    fetchReports();
+  }, []);
 
   const fetchReports = async () => {
     if (typeof window === 'undefined') return;
@@ -123,20 +112,6 @@ export default function AdminReports() {
       minute: '2-digit'
     });
   };
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen">
-        <div className="w-64 h-screen bg-gray-100 animate-pulse" />
-        <div className="flex-1 ml-64 p-8">
-          <div className="card-aurora p-12 text-center">
-            <div className="loading-aurora mx-auto mb-4"></div>
-            <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen">

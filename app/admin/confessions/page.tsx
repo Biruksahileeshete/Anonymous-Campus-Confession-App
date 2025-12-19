@@ -1,14 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import AdminSidebar from '@/components/AdminSidebar';
 import { MessageSquare, ThumbsUp, Laugh, Frown, Eye, EyeOff, Trash2, RotateCcw } from 'lucide-react';
-
-// Dynamically import AdminSidebar to avoid SSR issues
-const AdminSidebar = dynamic(() => import('@/components/AdminSidebar'), {
-  ssr: false,
-  loading: () => <div className="w-64 h-screen bg-gray-100 animate-pulse" />
-});
 
 interface Confession {
   id: string;
@@ -22,20 +16,15 @@ interface Confession {
   created_at: string;
 }
 
+// Force dynamic rendering
+
 export default function AdminConfessions() {
   const [confessions, setConfessions] = useState<Confession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    fetchConfessions();
   }, []);
-
-  useEffect(() => {
-    if (mounted) {
-      fetchConfessions();
-    }
-  }, [mounted]);
 
   const fetchConfessions = async () => {
     if (typeof window === 'undefined') return;
@@ -99,20 +88,6 @@ export default function AdminConfessions() {
       minute: '2-digit'
     });
   };
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen">
-        <div className="w-64 h-screen bg-gray-100 animate-pulse" />
-        <div className="flex-1 ml-64 p-8">
-          <div className="card-aurora p-12 text-center">
-            <div className="loading-aurora mx-auto mb-4"></div>
-            <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen">

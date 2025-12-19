@@ -1,11 +1,20 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Force dynamic rendering
+
 export default function Home() {
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
+    
     // Check if user is already authenticated
     const user = localStorage.getItem('user');
     const token = localStorage.getItem('token');
@@ -22,7 +31,7 @@ export default function Home() {
       // Redirect to auth page
       router.push('/auth');
     }
-  }, [router]);
+  }, [router, mounted]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

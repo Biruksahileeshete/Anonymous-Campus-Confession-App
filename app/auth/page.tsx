@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, getSession } from 'next-auth/react';
+
+// Force dynamic rendering
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -43,8 +45,10 @@ export default function AuthPage() {
         throw new Error(data.error || 'Authentication failed');
       }
 
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('token', data.token);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('token', data.token);
+      }
 
       if (data.user.role === 'admin') {
         router.push('/admin/dashboard');
@@ -72,7 +76,7 @@ export default function AuthPage() {
         setError('Google sign-in failed. Please try again.');
       } else if (result?.ok) {
         const session = await getSession();
-        if (session?.user) {
+        if (session?.user && typeof window !== 'undefined') {
           localStorage.setItem('user', JSON.stringify({
             id: session.user.id,
             email: session.user.email,

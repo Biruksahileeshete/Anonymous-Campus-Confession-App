@@ -1,14 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import AdminSidebar from '@/components/AdminSidebar';
 import { Users, Search, RefreshCw, Crown, User, FileText, Calendar, Ban, Trash2 } from 'lucide-react';
-
-// Dynamically import AdminSidebar to avoid SSR issues
-const AdminSidebar = dynamic(() => import('@/components/AdminSidebar'), {
-  ssr: false,
-  loading: () => <div className="w-64 h-screen bg-gray-100 animate-pulse" />
-});
 
 interface User {
   id: string;
@@ -23,23 +17,18 @@ interface User {
   ban_reason?: string;
 }
 
+// Force dynamic rendering
+
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    fetchUsers();
   }, []);
-
-  useEffect(() => {
-    if (mounted) {
-      fetchUsers();
-    }
-  }, [mounted]);
 
   const fetchUsers = async () => {
     if (typeof window === 'undefined') return;
@@ -151,20 +140,6 @@ export default function AdminUsers() {
       day: 'numeric'
     });
   };
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen">
-        <div className="w-64 h-screen bg-gray-100 animate-pulse" />
-        <div className="flex-1 ml-64 p-8">
-          <div className="card-aurora p-12 text-center">
-            <div className="loading-aurora mx-auto mb-4"></div>
-            <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen">

@@ -1,14 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import AdminSidebar from '@/components/AdminSidebar';
 import { Users, MessageSquare, Flag, MessageCircle, EyeOff, BarChart3 } from 'lucide-react';
-
-// Dynamically import AdminSidebar to avoid SSR issues
-const AdminSidebar = dynamic(() => import('@/components/AdminSidebar'), {
-  ssr: false,
-  loading: () => <div className="w-64 h-screen bg-gray-100 animate-pulse" />
-});
 
 interface DashboardStats {
   totalConfessions: number;
@@ -17,6 +11,8 @@ interface DashboardStats {
   hiddenConfessions: number;
   totalUsers: number;
 }
+
+// Force dynamic rendering
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
@@ -27,17 +23,10 @@ export default function AdminDashboard() {
     totalUsers: 0
   });
   const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    fetchStats();
   }, []);
-
-  useEffect(() => {
-    if (mounted) {
-      fetchStats();
-    }
-  }, [mounted]);
 
   const fetchStats = async () => {
     if (typeof window === 'undefined') return;
@@ -88,20 +77,6 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen">
-        <div className="w-64 h-screen bg-gray-100 animate-pulse" />
-        <div className="flex-1 ml-64 p-8">
-          <div className="card-aurora p-12 text-center">
-            <div className="loading-aurora mx-auto mb-4"></div>
-            <p className="text-lg font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen">
