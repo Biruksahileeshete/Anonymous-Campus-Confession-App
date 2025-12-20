@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { BarChart3, Flag, MessageSquare, Users, LogOut, Zap } from 'lucide-react';
+import { BarChart, Flag, MessageSquare, Users, LogOut, Zap } from 'lucide-react';
 
 export default function AdminSidebar() {
   let pathname = '';
@@ -33,7 +33,7 @@ export default function AdminSidebar() {
     {
       href: '/admin/dashboard',
       label: 'Dashboard',
-      icon: BarChart3
+      icon: BarChart
     },
     {
       href: '/admin/reports',

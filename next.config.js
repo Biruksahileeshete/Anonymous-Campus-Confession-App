@@ -7,7 +7,9 @@ const nextConfig = {
     // Enable build worker for faster compilation
     webpackBuildWorker: true,
     // Enable optimized package imports
-    optimizePackageImports: ['react', 'react-dom'],
+    optimizePackageImports: ['react', 'react-dom', 'lucide-react', 'framer-motion'],
+    // Disable CSS optimization for now to avoid critters dependency issue
+    // optimizeCss: true,
   },
 
   // Move serverComponentsExternalPackages to root level
@@ -15,6 +17,11 @@ const nextConfig = {
 
   // Optimize webpack configuration
   webpack: (config, { isServer, dev }) => {
+    // Only apply webpack optimizations when not using Turbopack
+    if (process.env.TURBOPACK) {
+      return config;
+    }
+
     // Optimize for development
     if (dev) {
       config.watchOptions = {
@@ -59,15 +66,25 @@ const nextConfig = {
     config.resolve.modules = ['node_modules'];
     config.resolve.symlinks = false;
     
-    // Optimize chunks
+    // Optimize chunks for better caching
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
+        minSize: 20000,
+        maxSize: 244000,
         cacheGroups: {
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             chunks: 'all',
+            priority: 10,
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 5,
+            reuseExistingChunk: true,
           },
         },
       };
@@ -83,6 +100,7 @@ const nextConfig = {
   images: {
     domains: [],
     formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
   },
 
   // Reduce bundle size
@@ -90,10 +108,47 @@ const nextConfig = {
     'next-auth': {
       transform: 'next-auth/{{member}}',
     },
+    // Removed lucide-react modular imports as it's causing issues with some icons
   },
   
   // Optimize output
   output: 'standalone',
+  
+  // Add performance headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
+          }
+        ]
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0'
+          }
+        ]
+      }
+    ];
+  }
 }
 
 module.exports = nextConfig

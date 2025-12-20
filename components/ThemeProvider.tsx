@@ -22,6 +22,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const initialTheme = savedTheme || systemTheme;
     
     setTheme(initialTheme);
+    
+    // Apply theme immediately to prevent flash
+    document.documentElement.setAttribute('data-theme', initialTheme);
+    
     setMounted(true);
   }, []);
 
@@ -37,9 +41,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  // Prevent hydration mismatch
+  // Prevent hydration mismatch - show basic styling while loading
   if (!mounted) {
-    return <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-orange-600">{children}</div>;
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, #fef7f0 0%, #f0fdfa 25%, #fffbeb 50%, #ecfdf5 75%, #fef7f0 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        {children}
+      </div>
+    );
   }
 
   return (

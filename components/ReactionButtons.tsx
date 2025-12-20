@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { reactionManager } from '@/lib/reaction-manager';
 
 interface ReactionButtonsProps {
   confessionId: string;
@@ -13,126 +14,149 @@ export default function ReactionButtons({
   reactions,
   onUpdate
 }: ReactionButtonsProps) {
-  const [userReactions, setUserReactions] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('popular');
+  const [customEmoji, setCustomEmoji] = useState('');
+  const [reactionState, setReactionState] = useState<{
+    userReactions: string[];
+    counts: { [key: string]: number };
+    isPending: (emoji: string) => boolean;
+  } | null>(null);
 
   // Popular emojis for quick access
   const popularEmojis = ['👍', '❤️', '😂', '😢', '😮', '😡', '🔥', '💯', '👏', '🙌', '😍', '🤔', '😭', '🎉', '💪'];
   
+  // Extended emoji categories
+  const emojiCategories = {
+    faces: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐'],
+    hearts: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟'],
+    hands: ['👍', '👎', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👋', '🤚', '🖐️', '✋', '🖖', '👏', '🙌', '🤲', '🤝', '🙏'],
+    objects: ['🔥', '💯', '💥', '💫', '⭐', '🌟', '✨', '⚡', '💎', '🏆', '🥇', '🎉', '🎊', '🎈', '🎁', '🎀', '🎂', '🍰'],
+    nature: ['🌈', '☀️', '🌙', '⭐', '🌟', '💫', '✨', '☁️', '⛅', '🌤️', '🌦️', '🌧️', '⛈️', '🌩️', '❄️', '☃️', '⛄', '🌊', '💧', '💦'],
+    animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄', '🐎', '🐖', '🐏', '🐑', '🦙', '🐐', '🦌', '🐕', '🐩', '🦮', '🐕‍🦺', '🐈', '🐓', '🦃', '🦚', '🦜', '🦢', '🦩', '🕊️', '🐇', '🦝', '🦨', '🦡', '🦦', '🦥', '🐁', '🐀', '🐿️', '🦔']
+  };
 
-
+  // Initialize reaction manager and subscribe to changes
   useEffect(() => {
+    // Initialize with current data
+    reactionManager.initializeConfession(confessionId, [], reactions);
+    
+    // Fetch user reactions
     fetchUserReactions();
-  }, [confessionId]);
+    
+    // Subscribe to changes
+    const unsubscribe = reactionManager.subscribe(confessionId, () => {
+      const state = reactionManager.getState(confessionId);
+      if (state) {
+        setReactionState(state);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [confessionId, reactions]);
 
   const fetchUserReactions = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token || token === 'null') return;
 
       const response = await fetch(`/api/reactions?confessionId=${confessionId}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
       
       if (response.ok) {
         const data = await response.json();
-        setUserReactions(data.userReactions || []);
+        const userReactions = data.userReactions || [];
+        
+        // Initialize reaction manager with fetched data
+        reactionManager.initializeConfession(confessionId, userReactions, reactions);
+        
+        // Update local state
+        const state = reactionManager.getState(confessionId);
+        if (state) {
+          setReactionState(state);
+        }
       }
     } catch (error) {
-      console.error('Error fetching user reactions:', error);
+      console.warn('Failed to fetch user reactions:', error);
     }
   };
 
-  const handleReaction = async (emoji: string) => {
-    if (isLoading) return;
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please log in to react');
-      return;
-    }
-
-    setIsLoading(true);
+  const handleReaction = useCallback(async (emoji: string) => {
+    if (!emoji?.trim()) return;
     
     try {
-      const isAlreadyReacted = userReactions.includes(emoji);
+      const wasToggled = await reactionManager.toggleReaction(confessionId, emoji.trim());
       
-      const response = await fetch('/api/reactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          confessionId,
-          type: emoji,
-          action: isAlreadyReacted ? 'remove' : 'add'
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Update local state immediately for better UX
-        if (isAlreadyReacted) {
-          setUserReactions(prev => prev.filter(r => r !== emoji));
-        } else {
-          setUserReactions(prev => [...prev, emoji]);
-        }
-        
-        // Refresh the confession data to get updated counts
-        setTimeout(() => {
-          onUpdate();
-        }, 100);
-        
-      } else {
-          let errorText = 'Failed to update reaction';
-          try {
-            const errorData = await response.json();
-            console.error('Reaction error:', errorData);
-            errorText = errorData.error || JSON.stringify(errorData) || errorText;
-          } catch (e) {
-            // fallback to status text
-            console.error('Reaction non-json error, status:', response.status, response.statusText);
-            errorText = response.statusText || errorText;
-          }
-          alert(errorText);
+      // Haptic feedback on mobile
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
       }
+      
+      // Optional: notify parent component
+      setTimeout(() => onUpdate(), 100);
+      
     } catch (error) {
-      console.error('Error updating reaction:', error);
-      alert('Network error occurred');
-    } finally {
-      setIsLoading(false);
+      console.warn('Reaction failed:', error);
+      // Show user-friendly message
+      const message = error instanceof Error ? error.message : 'Failed to react';
+      // You could show a toast notification here instead of alert
+      console.error('Reaction error:', message);
     }
+  }, [confessionId, onUpdate]);
+
+  const handleCustomEmojiSubmit = useCallback(() => {
+    if (customEmoji.trim()) {
+      handleReaction(customEmoji.trim());
+      setCustomEmoji('');
+      setShowEmojiPicker(false);
+    }
+  }, [customEmoji, handleReaction]);
+
+  const getCurrentEmojis = () => {
+    if (selectedCategory === 'popular') return popularEmojis;
+    return emojiCategories[selectedCategory as keyof typeof emojiCategories] || popularEmojis;
   };
 
   const getButtonClass = (emoji: string) => {
-    const isActive = userReactions.includes(emoji);
-    const baseClass = "flex items-center space-x-1 px-3 py-2 rounded-full transition-all duration-200 text-sm font-medium backdrop-blur-sm transform hover:scale-105";
+    const isActive = reactionState?.userReactions.includes(emoji) || false;
+    const isPending = reactionState?.isPending(emoji) || false;
+    
+    let baseClass = "flex items-center space-x-1 px-3 py-2 rounded-full transition-all duration-150 text-sm font-medium backdrop-blur-sm transform hover:scale-105 active:scale-95";
+    
+    if (isPending) {
+      baseClass += " opacity-70 animate-pulse";
+    }
     
     if (isActive) {
       return `${baseClass} bg-blue-500/30 text-blue-200 border border-blue-400/50 shadow-lg`;
     }
     
-    return `${baseClass} bg-white/10 text-white/80 border border-white/20 hover:bg-white/20 hover:text-white`;
+    return `${baseClass} border transition-all duration-150 hover:scale-105`;
   };
+
+  // Use optimized counts from reaction manager or fallback to props
+  const displayCounts = reactionState?.counts || reactions;
+  const userReactions = reactionState?.userReactions || [];
 
   return (
     <div className="space-y-3">
       {/* Reaction summary */}
       <div className="flex items-center flex-wrap gap-2">
-        {Object.entries(reactions).map(([emoji, count]) => {
+        {Object.entries(displayCounts).map(([emoji, count]) => {
           if (count === 0) return null;
           
           return (
             <button
               key={emoji}
               onClick={() => handleReaction(emoji)}
-              disabled={isLoading}
               className={getButtonClass(emoji)}
+              style={{ willChange: 'transform' }}
             >
               <span className="text-lg">{emoji}</span>
               <span>{count}</span>
@@ -143,7 +167,13 @@ export default function ReactionButtons({
         {/* Add reaction button */}
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="flex items-center space-x-1 px-3 py-2 rounded-full bg-white/10 text-white/80 border border-white/20 hover:bg-white/20 hover:text-white transition-all duration-200 text-sm font-medium backdrop-blur-sm"
+          className="flex items-center space-x-1 px-3 py-2 rounded-full border transition-all duration-150 text-sm font-medium backdrop-blur-sm hover:scale-105 active:scale-95"
+          style={{ 
+            willChange: 'transform',
+            backgroundColor: 'var(--bg-glass)',
+            borderColor: 'var(--border-primary)',
+            color: 'var(--text-secondary)'
+          }}
         >
           <span>➕</span>
           <span>React</span>
@@ -152,24 +182,87 @@ export default function ReactionButtons({
 
       {/* Emoji picker */}
       {showEmojiPicker && (
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-          <div className="grid grid-cols-8 gap-2 max-h-32 overflow-y-auto">
-            {popularEmojis.map((emoji) => (
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 animate-fade-scale">
+          {/* Category tabs */}
+          <div className="flex flex-wrap gap-2 mb-4 border-b border-white/20 pb-3">
+            <button
+              onClick={() => setSelectedCategory('popular')}
+              className={`px-3 py-1 rounded-lg text-sm transition-all duration-150 ${
+                selectedCategory === 'popular' 
+                  ? 'bg-coral-500/20 border border-coral-400/50' 
+                  : 'border hover:bg-coral-500/10'
+              }`}
+              style={{
+                backgroundColor: selectedCategory === 'popular' ? 'var(--coral-50)' : 'transparent',
+                borderColor: selectedCategory === 'popular' ? 'var(--coral-500)' : 'var(--border-primary)',
+                color: selectedCategory === 'popular' ? 'var(--coral-500)' : 'var(--text-secondary)'
+              }}
+            >
+              Popular
+            </button>
+            {Object.keys(emojiCategories).map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-3 py-1 rounded-lg text-sm transition-all duration-150 capitalize border ${
+                  selectedCategory === category 
+                    ? 'bg-coral-500/20 border-coral-400/50' 
+                    : 'border hover:bg-coral-500/10'
+                }`}
+                style={{
+                  backgroundColor: selectedCategory === category ? 'var(--coral-50)' : 'transparent',
+                  borderColor: selectedCategory === category ? 'var(--coral-500)' : 'var(--border-primary)',
+                  color: selectedCategory === category ? 'var(--coral-500)' : 'var(--text-secondary)'
+                }}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          {/* Emoji grid */}
+          <div className="grid grid-cols-8 gap-2 max-h-40 overflow-y-auto mb-4">
+            {getCurrentEmojis().map((emoji) => (
               <button
                 key={emoji}
                 onClick={() => {
                   handleReaction(emoji);
                   setShowEmojiPicker(false);
                 }}
-                className="text-2xl p-2 rounded-lg hover:bg-white/20 transition-all duration-200 transform hover:scale-110"
+                className="text-2xl p-2 rounded-lg hover:bg-white/20 transition-all duration-150 transform hover:scale-110 active:scale-95"
+                style={{ willChange: 'transform' }}
               >
                 {emoji}
               </button>
             ))}
           </div>
-          <div className="mt-3 pt-3 border-t border-white/20">
-            <p className="text-white/60 text-xs text-center">
-              Click any emoji to react! You can use multiple reactions.
+
+          {/* Custom emoji input */}
+          <div className="border-t border-white/20 pt-3">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={customEmoji}
+                onChange={(e) => setCustomEmoji(e.target.value)}
+                placeholder="Type any emoji..."
+                className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-coral-400/50 transition-all duration-150"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  borderColor: 'var(--border-primary)',
+                  color: 'var(--text-primary)'
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleCustomEmojiSubmit()}
+              />
+              <button
+                onClick={handleCustomEmojiSubmit}
+                className="px-4 py-2 bg-blue-500/30 text-blue-200 border border-blue-400/50 rounded-lg hover:bg-blue-500/40 transition-all duration-150 hover:scale-105 active:scale-95"
+                style={{ willChange: 'transform' }}
+              >
+                Add
+              </button>
+            </div>
+            <p className="text-xs mt-2 text-center" style={{ color: 'var(--text-tertiary)' }}>
+              You can use any emoji! Just type or paste it above.
             </p>
           </div>
         </div>

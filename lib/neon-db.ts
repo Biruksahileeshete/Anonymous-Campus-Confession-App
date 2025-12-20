@@ -127,6 +127,26 @@ export class SimpleDatabase {
     return result.rows[0];
   }
 
+  async createCommentFast(commentData: {
+    confession_id: string;
+    content: string;
+    author_id: string;
+  }) {
+    try {
+      // Optimized insert with minimal data return
+      const result = await fastQuery(`
+        INSERT INTO comments (confession_id, content, author_id, created_at)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+        RETURNING id, content, created_at
+      `, [commentData.confession_id, commentData.content, commentData.author_id]);
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error creating fast comment:', error);
+      throw error;
+    }
+  }
+
   async createComment(commentData: {
     confession_id: string;
     content: string;
@@ -173,25 +193,59 @@ export class SimpleDatabase {
     return parseInt(result.rows[0].count);
   }
 
+  async upsertReaction(reactionData: {
+    confession_id: string;
+    user_id: string;
+    type: string;
+  }) {
+    try {
+      // Use INSERT ... ON CONFLICT for atomic upsert
+      const result = await queryNeon(`
+        INSERT INTO reactions (confession_id, user_id, type, created_at)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+        ON CONFLICT (confession_id, user_id, type) 
+        DO UPDATE SET created_at = CURRENT_TIMESTAMP
+        RETURNING *
+      `, [reactionData.confession_id, reactionData.user_id, reactionData.type]);
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error upserting reaction:', error);
+      throw error;
+    }
+  }
+
   async createReaction(reactionData: {
     confession_id: string;
     user_id: string;
     type: string;
   }) {
-    const result = await queryNeon(`
-      INSERT INTO reactions (confession_id, user_id, type)
-      VALUES ($1, $2, $3)
-      RETURNING *
-    `, [reactionData.confession_id, reactionData.user_id, reactionData.type]);
-    
-    return result.rows[0];
+    try {
+      // Use INSERT ... ON CONFLICT to handle duplicates gracefully
+      const result = await queryNeon(`
+        INSERT INTO reactions (confession_id, user_id, type)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (confession_id, user_id, type) DO NOTHING
+        RETURNING *
+      `, [reactionData.confession_id, reactionData.user_id, reactionData.type]);
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error creating reaction:', error);
+      throw error;
+    }
   }
 
   async deleteSpecificReaction(confessionId: string, userId: string, type: string) {
-    await queryNeon(`
-      DELETE FROM reactions 
-      WHERE confession_id = $1 AND user_id = $2 AND type = $3
-    `, [confessionId, userId, type]);
+    try {
+      await queryNeon(`
+        DELETE FROM reactions 
+        WHERE confession_id = $1 AND user_id = $2 AND type = $3
+      `, [confessionId, userId, type]);
+    } catch (error) {
+      console.error('Error deleting reaction:', error);
+      throw error;
+    }
   }
 
   async getUserReactions(confessionId: string, userId: string) {
@@ -213,28 +267,52 @@ export class SimpleDatabase {
   }
 
   async updateConfessionReactionCounts(confessionId: string) {
-    // Get all reaction counts for this confession
-    const result = await queryNeon(`
-      SELECT type, COUNT(*) as count
-      FROM reactions 
-      WHERE confession_id = $1
-      GROUP BY type
-    `, [confessionId]);
-    
-    // Build reaction counts object
-    const reactionCounts: { [key: string]: number } = {};
-    result.rows.forEach(row => {
-      reactionCounts[row.type] = parseInt(row.count);
-    });
-    
-    // Update confession with reaction counts
-    await queryNeon(`
-      UPDATE confessions 
-      SET 
-        reaction_counts = $2,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1
-    `, [confessionId, JSON.stringify(reactionCounts)]);
+    try {
+      // Use a more efficient query with aggregation
+      const result = await queryNeon(`
+        WITH reaction_counts AS (
+          SELECT type, COUNT(*) as count
+          FROM reactions 
+          WHERE confession_id = $1
+          GROUP BY type
+        )
+        UPDATE confessions 
+        SET 
+          reaction_counts = COALESCE(
+            (SELECT json_object_agg(type, count) FROM reaction_counts),
+            '{}'::json
+          ),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+        RETURNING reaction_counts
+      `, [confessionId]);
+      
+      return result.rows[0]?.reaction_counts || {};
+    } catch (error) {
+      console.error('Error updating reaction counts:', error);
+      // Fallback to original method
+      const result = await queryNeon(`
+        SELECT type, COUNT(*) as count
+        FROM reactions 
+        WHERE confession_id = $1
+        GROUP BY type
+      `, [confessionId]);
+      
+      const reactionCounts: { [key: string]: number } = {};
+      result.rows.forEach(row => {
+        reactionCounts[row.type] = parseInt(row.count);
+      });
+      
+      await queryNeon(`
+        UPDATE confessions 
+        SET 
+          reaction_counts = $2,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `, [confessionId, JSON.stringify(reactionCounts)]);
+      
+      return reactionCounts;
+    }
   }
 
   async createReport(reportData: {
@@ -476,13 +554,19 @@ export class SimpleDatabase {
   }
 
   async getUnreadNotificationCount(userId: string) {
-    const result = await queryNeon(`
-      SELECT COUNT(*) as count
-      FROM notifications
-      WHERE user_id = $1 AND is_read = false
-    `, [userId]);
-    
-    return parseInt(result.rows[0].count);
+    try {
+      const result = await queryNeon(`
+        SELECT COUNT(*) as count
+        FROM notifications
+        WHERE user_id = $1 AND is_read = false
+      `, [userId]);
+      
+      const count = parseInt(result.rows[0]?.count || '0');
+      return isNaN(count) ? 0 : count;
+    } catch (error) {
+      console.error('Error getting unread notification count:', error);
+      return 0;
+    }
   }
 
   async getReportWithUserInfo(reportId: string) {

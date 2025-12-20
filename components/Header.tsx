@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTheme } from './ThemeProvider';
+import { useFastNavigation } from '@/lib/fast-navigation';
 import { 
   Bell, 
   RefreshCw, 
@@ -16,7 +16,6 @@ import {
   Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import LoadingSpinner from './LoadingSpinner';
 
 interface User {
   id: string;
@@ -32,7 +31,7 @@ interface HeaderProps {
 }
 
 function Header({ user, onLogout }: HeaderProps) {
-  const router = useRouter();
+  const { fastNavigate, preloadRoutes } = useFastNavigation();
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -43,7 +42,9 @@ function Header({ user, onLogout }: HeaderProps) {
   // Ensure component is mounted before accessing theme
   useEffect(() => {
     setMounted(true);
-  }, []);
+    // Preload routes for faster navigation
+    preloadRoutes();
+  }, [preloadRoutes]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -60,7 +61,9 @@ function Header({ user, onLogout }: HeaderProps) {
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
-          if (parsed.unreadCount != null) setUnreadCount(parsed.unreadCount);
+          if (parsed.unreadCount != null && parsed.ts > Date.now() - 60000) { // 1 minute cache
+            setUnreadCount(parsed.unreadCount);
+          }
         } catch {}
       }
 
@@ -68,7 +71,8 @@ function Header({ user, onLogout }: HeaderProps) {
       const interval = setInterval(() => {
         // only poll when tab is visible
         if (document.visibilityState === 'visible') fetchUnreadCount();
-      }, 30000);
+      }, 15000); // Check every 15 seconds instead of 30
+      
       return () => clearInterval(interval);
     }
   }, [user]);
@@ -80,16 +84,25 @@ function Header({ user, onLogout }: HeaderProps) {
 
       const response = await fetch('/api/notifications/unread-count', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache'
         }
       });
 
       if (response.ok) {
         const data = await response.json();
-        const count = data.count || 0;
+        const count = Math.max(0, parseInt(data.count) || 0);
+        console.log('Notification count fetched:', count); // Debug log
         setUnreadCount(count);
         // cache for instant hydration elsewhere
-        try { localStorage.setItem('notifications_cache', JSON.stringify({ unreadCount: count, ts: Date.now() })); } catch {}
+        try { 
+          localStorage.setItem('notifications_cache', JSON.stringify({ 
+            unreadCount: count, 
+            ts: Date.now() 
+          })); 
+        } catch {}
+      } else {
+        console.warn('Failed to fetch unread count:', response.status);
       }
     } catch (error) {
       console.error('Error fetching unread count:', error);
@@ -116,25 +129,26 @@ function Header({ user, onLogout }: HeaderProps) {
     // Clear user data
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('notifications_cache');
     
     // Call parent logout handler if provided
     if (onLogout) {
       onLogout();
     } else {
       // Fallback navigation
-      router.push('/auth');
+      fastNavigate('/auth', { replace: true });
     }
-  }, [onLogout, router]);
+  }, [onLogout, fastNavigate]);
 
   const handleProfileClick = useCallback(() => {
-    router.push('/profile');
-  }, [router]);
+    fastNavigate('/profile');
+  }, [fastNavigate]);
 
   const handleNotificationClick = useCallback(() => {
     setUnreadCount(0); // Clear unread count
     try { localStorage.setItem('notifications_cache', JSON.stringify({ unreadCount: 0, ts: Date.now() })); } catch {}
-    router.push('/notifications');
-  }, [router]);
+    fastNavigate('/notifications');
+  }, [fastNavigate]);
 
   return (
     <motion.header 
@@ -145,8 +159,8 @@ function Header({ user, onLogout }: HeaderProps) {
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-6 py-4 overflow-visible">
+        <div className="flex items-center justify-between overflow-visible">
           {/* Logo */}
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -171,7 +185,7 @@ function Header({ user, onLogout }: HeaderProps) {
           </motion.div>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-3 overflow-visible">
             {user ? (
               <motion.div 
                 className="flex items-center space-x-3"
@@ -199,7 +213,7 @@ function Header({ user, onLogout }: HeaderProps) {
                 {/* Theme Toggle Button */}
                 <motion.button
                   onClick={handleToggleTheme}
-                  className="glass-emerald p-3 rounded-2xl hover:scale-105 transition-all duration-300 group"
+                  className="glass-emerald p-3 rounded-2xl hover:scale-105 transition-all duration-300 group w-11 h-11 flex items-center justify-center"
                   title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -215,26 +229,29 @@ function Header({ user, onLogout }: HeaderProps) {
                 </motion.button>
                 
                 {/* Notifications Button */}
-                <motion.div className="relative overflow-visible">
+                <motion.div className="relative notification-container">
                   <motion.button
                     onClick={handleNotificationClick}
-                    className="glass-teal p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative overflow-visible"
+                    className="glass-teal p-3 rounded-2xl hover:scale-105 transition-all duration-300 group"
                     title="Notifications"
                     whileTap={{ scale: 0.95 }}
                   >
                     <Bell className="w-5 h-5 text-teal-600 group-hover:text-teal-700" />
                   </motion.button>
+                  {/* Badge positioned outside the button for full visibility */}
                   <AnimatePresence>
                     {unreadCount > 0 && (
-                      <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full border-2 border-white shadow-lg font-bold z-10"
-                        style={{ transform: 'translate(25%, -25%)' }}
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        className="notification-badge"
                       >
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </motion.span>
+                        <div className="notification-badge-inner">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </div>
+                      </motion.div>
                     )}
                   </AnimatePresence>
                 </motion.div>
@@ -347,13 +364,13 @@ function Header({ user, onLogout }: HeaderProps) {
                   handleNotificationClick();
                   setIsMenuOpen(false);
                 }}
-                className="w-full glass-teal px-6 py-4 rounded-2xl text-left font-medium"
+                className="w-full glass-amber px-6 py-4 rounded-2xl text-left font-medium"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <Bell className="w-5 h-5 text-teal-600" />
+                    <Bell className="w-5 h-5 text-amber-600" />
                     <span style={{ color: 'var(--text-primary)' }}>Notifications</span>
                   </div>
                   {unreadCount > 0 && (
@@ -363,17 +380,47 @@ function Header({ user, onLogout }: HeaderProps) {
                   )}
                 </div>
               </motion.button>
-              
+
+              {/* Theme Toggle Button */}
               <motion.button
                 onClick={() => {
-                  handleProfileClick();
+                  handleToggleTheme();
                   setIsMenuOpen(false);
                 }}
                 className="w-full glass-emerald px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <User className="w-5 h-5 text-emerald-600" />
+                {mounted && (
+                  <>
+                    {theme === 'dark' ? (
+                      <Sun className="w-5 h-5 text-emerald-600" />
+                    ) : (
+                      <Moon className="w-5 h-5 text-emerald-600" />
+                    )}
+                    <span style={{ color: 'var(--text-primary)' }}>
+                      Switch to {theme === 'dark' ? 'Light' : 'Dark'} Mode
+                    </span>
+                  </>
+                )}
+                {!mounted && (
+                  <>
+                    <div className="w-5 h-5 bg-emerald-600/20 rounded animate-pulse"></div>
+                    <span style={{ color: 'var(--text-primary)' }}>Theme</span>
+                  </>
+                )}
+              </motion.button>
+              
+              <motion.button
+                onClick={() => {
+                  handleProfileClick();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full glass-teal px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <User className="w-5 h-5 text-teal-600" />
                 <span style={{ color: 'var(--text-primary)' }}>Profile Settings</span>
               </motion.button>
               
@@ -382,11 +429,11 @@ function Header({ user, onLogout }: HeaderProps) {
                   handleLogout();
                   setIsMenuOpen(false);
                 }}
-                className="w-full glass-amber px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
+                className="w-full glass-coral px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <LogOut className="w-5 h-5 text-amber-600" />
+                <LogOut className="w-5 h-5 text-coral-600" />
                 <span style={{ color: 'var(--text-primary)' }}>Logout</span>
               </motion.button>
             </motion.div>

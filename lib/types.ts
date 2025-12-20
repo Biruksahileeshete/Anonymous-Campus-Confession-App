@@ -5,6 +5,7 @@ export interface Confession {
   author_id: string;
   is_hidden: boolean;
   reaction_counts: { [key: string]: number };
+  comment_count: number;
 }
 
 export interface Comment {

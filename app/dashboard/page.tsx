@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Heart, MessageCircle } from 'lucide-react';
+import { Sparkles, Heart, MessageCircle, ArrowUp } from 'lucide-react';
 import Header from '@/components/Header';
 import CreateConfession from '@/components/CreateConfession';
-import ConfessionCard from '@/components/ConfessionCard';
+import OptimizedConfessionCard from '@/components/OptimizedConfessionCard';
 import { Confession } from '@/lib/types';
 
 interface User {
@@ -224,9 +224,8 @@ export default function UserDashboard() {
                     ease: "easeOut"
                   }}
                 >
-                  <ConfessionCard
+                  <OptimizedConfessionCard
                     confession={confession}
-                    currentUserId={user.id}
                     onUpdate={fetchConfessions}
                   />
                 </motion.div>
@@ -236,17 +235,18 @@ export default function UserDashboard() {
         </AnimatePresence>
       </main>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - Scroll to Top */}
       <motion.button
         className="fab-aurora"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 1, type: "spring" }}
-        whileHover={{ scale: 1.1, rotate: 15 }}
-        whileTap={{ scale: 0.9 }}
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ delay: 1, type: "spring", stiffness: 200, damping: 15 }}
+        whileHover={{ scale: 1.1, y: -3 }}
+        whileTap={{ scale: 0.95, y: -1 }}
+        title="Back to top"
       >
-        <Sparkles className="w-8 h-8 text-white" />
+        <ArrowUp className="w-6 h-6" />
       </motion.button>
     </div>
   );

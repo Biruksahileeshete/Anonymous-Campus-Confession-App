@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
-import { Users, MessageSquare, Flag, MessageCircle, EyeOff, BarChart3 } from 'lucide-react';
+import { Users, MessageSquare, Flag, MessageCircle, EyeOff, BarChart } from 'lucide-react';
 
 interface DashboardStats {
   totalConfessions: number;
@@ -87,7 +87,7 @@ export default function AdminDashboard() {
           <div className="mb-10 animate-slideInUp">
             <div className="flex items-center space-x-4 mb-4">
               <div className="w-16 h-16 bg-gradient-to-br from-coral-500 via-teal-500 to-amber-500 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/30">
-                <BarChart3 className="w-8 h-8 text-white drop-shadow-lg" />
+                <BarChart className="w-8 h-8 text-white drop-shadow-lg" />
               </div>
               <div>
                 <h1 className="text-5xl font-bold text-aurora">Admin Dashboard</h1>
