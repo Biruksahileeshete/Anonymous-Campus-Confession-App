@@ -3,6 +3,9 @@ const nextConfig = {
   // Disable static generation for all pages to avoid SSR issues
   trailingSlash: false,
   
+  // Allow all hosts for Replit proxy
+  allowedDevOrigins: ['*'],
+  
   experimental: {
     // Enable build worker for faster compilation
     webpackBuildWorker: true,
