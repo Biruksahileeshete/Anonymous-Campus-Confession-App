@@ -25,10 +25,12 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is admin
+    // Immediate authentication check
     const userData = localStorage.getItem('user');
-    if (!userData) {
-      window.location.href = '/auth';
+    const token = localStorage.getItem('token');
+    
+    if (!userData || !token || userData === 'null' || token === 'null') {
+      window.location.replace('/auth');
       return;
     }
 
@@ -36,12 +38,13 @@ export default function AdminDashboard() {
       const user = JSON.parse(userData);
       if (user.role !== 'admin') {
         console.error('User is not admin:', user.role);
-        window.location.href = '/dashboard';
+        window.location.replace('/dashboard');
         return;
       }
     } catch (error) {
       console.error('Error parsing user data:', error);
-      window.location.href = '/auth';
+      localStorage.clear();
+      window.location.replace('/auth');
       return;
     }
 
@@ -56,7 +59,7 @@ export default function AdminDashboard() {
       if (!token) {
         console.error('No token found - redirecting to auth');
         alert('Please log in to access admin panel');
-        window.location.href = '/auth';
+        window.location.replace('/auth');
         return;
       }
 
@@ -73,16 +76,15 @@ export default function AdminDashboard() {
       if (response.status === 401) {
         console.error('Unauthorized - token invalid');
         alert('Your session has expired. Please log in again.');
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        window.location.href = '/auth';
+        localStorage.clear();
+        window.location.replace('/auth');
         return;
       }
 
       if (response.status === 403) {
         console.error('Forbidden - not admin');
         alert('Admin access required. You will be redirected to the dashboard.');
-        window.location.href = '/dashboard';
+        window.location.replace('/dashboard');
         return;
       }
 

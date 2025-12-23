@@ -25,28 +25,32 @@ export default function UserDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check authentication
+    // Immediate authentication check
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     
-    if (!userData || !token) {
-      router.push('/auth');
+    if (!userData || !token || userData === 'null' || token === 'null') {
+      window.location.replace('/auth');
       return;
     }
 
-    const parsedUser = JSON.parse(userData);
-    
-    console.log('Parsed user data:', parsedUser); // Debug log
-    
-    // Redirect admin to admin dashboard
-    if (parsedUser.role === 'admin') {
-      router.push('/admin/dashboard');
-      return;
-    }
+    try {
+      const parsedUser = JSON.parse(userData);
+      
+      // Immediate redirect for admin
+      if (parsedUser.role === 'admin') {
+        window.location.replace('/admin/dashboard');
+        return;
+      }
 
-    setUser(parsedUser);
-    fetchConfessions();
-  }, [router]);
+      setUser(parsedUser);
+      fetchConfessions();
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      localStorage.clear();
+      window.location.replace('/auth');
+    }
+  }, []);
 
   const fetchConfessions = async (page = 0) => {
     try {
@@ -78,9 +82,8 @@ export default function UserDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    router.push('/auth');
+    localStorage.clear();
+    window.location.replace('/auth');
   };
 
 

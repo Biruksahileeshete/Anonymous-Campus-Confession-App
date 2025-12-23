@@ -51,9 +51,9 @@ export default function AuthPage() {
       }
 
       if (data.user.role === 'admin') {
-        router.push('/admin/dashboard');
+        window.location.replace('/admin/dashboard');
       } else {
-        router.push('/dashboard');
+        window.location.replace('/dashboard');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -88,9 +88,9 @@ export default function AuthPage() {
           localStorage.setItem('token', `google_${session.user.id}_${Date.now()}`);
           
           if (session.user.role === 'admin') {
-            router.push('/admin/dashboard');
+            window.location.replace('/admin/dashboard');
           } else {
-            router.push('/dashboard');
+            window.location.replace('/dashboard');
           }
         }
       }

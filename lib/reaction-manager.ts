@@ -37,13 +37,12 @@ class ReactionManager {
     userReactions: string[], 
     counts: { [emoji: string]: number }
   ) {
-    if (!this.state[confessionId]) {
-      this.state[confessionId] = {
-        userReactions: new Set(userReactions),
-        counts: { ...counts },
-        pendingActions: new Map()
-      };
-    }
+    // Always update the state, don't check if it exists
+    this.state[confessionId] = {
+      userReactions: new Set(userReactions),
+      counts: { ...counts },
+      pendingActions: new Map()
+    };
   }
 
   // Get current state for a confession

@@ -38,8 +38,14 @@ export default function ReactionButtons({
 
   // Initialize reaction manager and subscribe to changes
   useEffect(() => {
-    // Initialize with current data first
+    // Always initialize with current data
     reactionManager.initializeConfession(confessionId, [], reactions);
+    
+    // Set initial state immediately
+    const initialState = reactionManager.getState(confessionId);
+    if (initialState) {
+      setReactionState(initialState);
+    }
     
     // Subscribe to changes
     const unsubscribe = reactionManager.subscribe(confessionId, () => {
@@ -49,18 +55,11 @@ export default function ReactionButtons({
       }
     });
 
-    // Fetch user reactions and update state
-    const fetchAndUpdate = async () => {
+    // Fetch user reactions in background
+    const fetchUserReactions = async () => {
       try {
         const token = localStorage.getItem('token');
-        if (!token || token === 'null') {
-          // Set initial state even without token
-          const initialState = reactionManager.getState(confessionId);
-          if (initialState) {
-            setReactionState(initialState);
-          }
-          return;
-        }
+        if (!token || token === 'null') return;
 
         const response = await fetch(`/api/reactions?confessionId=${confessionId}`, {
           headers: {
@@ -73,32 +72,16 @@ export default function ReactionButtons({
           const data = await response.json();
           const userReactions = data.userReactions || [];
           
-          // Re-initialize with fetched user reactions
+          // Update with user reactions
           reactionManager.initializeConfession(confessionId, userReactions, reactions);
-          
-          // Update local state immediately
-          const state = reactionManager.getState(confessionId);
-          if (state) {
-            setReactionState(state);
-          }
-        } else {
-          // Even if fetch fails, show the initial state
-          const initialState = reactionManager.getState(confessionId);
-          if (initialState) {
-            setReactionState(initialState);
-          }
         }
       } catch (error) {
         console.warn('Failed to fetch user reactions:', error);
-        // Show initial state even on error
-        const initialState = reactionManager.getState(confessionId);
-        if (initialState) {
-          setReactionState(initialState);
-        }
       }
     };
 
-    fetchAndUpdate();
+    // Fetch user reactions after initial setup
+    fetchUserReactions();
 
     return () => {
       unsubscribe();

@@ -126,29 +126,21 @@ function Header({ user, onLogout }: HeaderProps) {
   }, [mounted, toggleTheme]);
 
   const handleLogout = useCallback(() => {
-    // Clear user data immediately
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    localStorage.removeItem('notifications_cache');
-    localStorage.removeItem('notifications_cache_full');
+    // Clear all data instantly
+    localStorage.clear(); // Clear everything for security
     
-    // Call parent logout handler if provided
-    if (onLogout) {
-      onLogout();
-    } else {
-      // Immediate navigation without any delay
-      window.location.href = '/auth';
-    }
-  }, [onLogout]);
+    // Immediate redirect
+    window.location.replace('/auth');
+  }, []);
 
   const handleProfileClick = useCallback(() => {
-    window.location.href = '/profile';
+    window.location.replace('/profile');
   }, []);
 
   const handleNotificationClick = useCallback(() => {
     setUnreadCount(0); // Clear unread count immediately
     try { localStorage.setItem('notifications_cache', JSON.stringify({ unreadCount: 0, ts: Date.now() })); } catch {}
-    window.location.href = '/notifications';
+    window.location.replace('/notifications');
   }, []);
 
   return (
