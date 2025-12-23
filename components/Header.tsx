@@ -6,6 +6,7 @@ import { useTheme } from './ThemeProvider';
 import { useFastNavigation } from '@/lib/fast-navigation';
 import { 
   Bell, 
+  RefreshCw,
   LogOut, 
   User, 
   Menu, 
@@ -36,6 +37,7 @@ function Header({ user, onLogout }: HeaderProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
 
   // Ensure component is mounted before accessing theme
   useEffect(() => {
@@ -108,6 +110,16 @@ function Header({ user, onLogout }: HeaderProps) {
   };
 
   // Button functionality handlers
+  const handleReload = useCallback(() => {
+    setIsReloading(true);
+    // dispatch a global refresh event so pages can re-fetch quickly
+    try {
+      window.dispatchEvent(new Event('aurora:refresh'));
+    } catch {}
+    // keep the loading state visible briefly for animation
+    setTimeout(() => setIsReloading(false), 800);
+  }, []);
+
   const handleToggleTheme = useCallback(() => {
     if (!mounted) return;
     toggleTheme();
@@ -182,6 +194,23 @@ function Header({ user, onLogout }: HeaderProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
+                {/* Reload Button */}
+                <motion.button
+                  onClick={handleReload}
+                  className="glass-coral p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative w-11 h-11 flex items-center justify-center"
+                  title="Refresh Feed"
+                  whileTap={{ scale: 0.95 }}
+                  disabled={isReloading}
+                >
+                  <div className="flex items-center justify-center w-full h-full">
+                    {isReloading ? (
+                      <div className="loading-aurora w-5 h-5"></div>
+                    ) : (
+                      <RefreshCw className="w-5 h-5 text-coral-600 group-hover:text-coral-700" />
+                    )}
+                  </div>
+                </motion.button>
+
                 {/* Theme Toggle Button */}
                 <motion.button
                   onClick={handleToggleTheme}
@@ -316,6 +345,28 @@ function Header({ user, onLogout }: HeaderProps) {
               transition={{ duration: 0.3 }}
               className="md:hidden mt-6 space-y-3 overflow-hidden"
             >
+              <motion.button
+                onClick={() => {
+                  handleReload();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full glass-coral px-6 py-4 rounded-2xl text-left flex items-center space-x-4 font-medium"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                disabled={isReloading}
+              >
+                <div className="flex items-center justify-center w-5 h-5">
+                  {isReloading ? (
+                    <div className="loading-aurora w-5 h-5"></div>
+                  ) : (
+                    <RefreshCw className="w-5 h-5 text-coral-600" />
+                  )}
+                </div>
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {isReloading ? 'Refreshing...' : 'Refresh Feed'}
+                </span>
+              </motion.button>
+              
               <motion.button
                 onClick={() => {
                   handleNotificationClick();
