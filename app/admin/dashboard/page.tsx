@@ -25,6 +25,26 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if user is admin
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      window.location.href = '/auth';
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userData);
+      if (user.role !== 'admin') {
+        console.error('User is not admin:', user.role);
+        window.location.href = '/dashboard';
+        return;
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      window.location.href = '/auth';
+      return;
+    }
+
     fetchStats();
   }, []);
 
@@ -33,15 +53,32 @@ export default function AdminDashboard() {
     
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        window.location.href = '/auth';
+        return;
+      }
+
       const response = await fetch('/api/admin/stats', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
+
+      if (response.status === 401 || response.status === 403) {
+        console.error('Admin access denied');
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        window.location.href = '/auth';
+        return;
+      }
 
       if (response.ok) {
         const data = await response.json();
         setStats(data);
+      } else {
+        console.error('Failed to fetch stats:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);

@@ -19,15 +19,23 @@ export async function authenticateToken(request: NextRequest) {
       return { error: 'Access token required', status: 401 };
     }
 
-    const decoded = jwt.verify(
-      token, 
-      process.env.JWT_SECRET || 'fallback-secret'
-    ) as any;
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error('JWT_SECRET environment variable is not set');
+      return { error: 'Server configuration error', status: 500 };
+    }
+
+    const decoded = jwt.verify(token, jwtSecret) as any;
 
     // Get fresh user data
     const user = await simpleDb.getUserById(decoded.userId);
     if (!user) {
       return { error: 'User not found', status: 401 };
+    }
+
+    // Check if user is banned
+    if (user.is_banned) {
+      return { error: 'Account is banned', status: 403 };
     }
 
     return {
@@ -41,7 +49,13 @@ export async function authenticateToken(request: NextRequest) {
     };
   } catch (error) {
     console.error('Token verification error:', error);
-    return { error: 'Invalid token', status: 401 };
+    if (error instanceof jwt.JsonWebTokenError) {
+      return { error: 'Invalid token', status: 401 };
+    }
+    if (error instanceof jwt.TokenExpiredError) {
+      return { error: 'Token expired', status: 401 };
+    }
+    return { error: 'Authentication failed', status: 401 };
   }
 }
 
