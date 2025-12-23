@@ -30,18 +30,6 @@ async function checkDatabase() {
       console.log(`  ${index + 1}. "${confession.preview}..." - by ${confession.author}`);
     });
 
-    // Check reactions
-    const reactions = await client.query(`
-      SELECT r.type, COUNT(*) as count
-      FROM reactions r
-      GROUP BY r.type
-      ORDER BY count DESC
-    `);
-    console.log(`\n❤️ Reactions (${reactions.rows.reduce((sum, r) => sum + parseInt(r.count), 0)} total):`);
-    reactions.rows.forEach(reaction => {
-      console.log(`  ${reaction.type}: ${reaction.count}`);
-    });
-
     // Check comments
     const comments = await client.query(`
       SELECT COUNT(*) as total_comments,

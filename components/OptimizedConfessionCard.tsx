@@ -11,7 +11,6 @@ interface Confession {
   id: string;
   content: string;
   created_at: string;
-  reaction_counts: { [key: string]: number };
   comment_count: number;
 }
 
@@ -91,7 +90,6 @@ export default function OptimizedConfessionCard({
         {/* Reactions */}
         <ReactionButtons
           confessionId={confession.id}
-          reactions={confession.reaction_counts}
           onUpdate={onUpdate || (() => {})}
         />
 
@@ -100,20 +98,19 @@ export default function OptimizedConfessionCard({
           <button
             onClick={() => {
               setShowComments(!showComments);
-              // Force refresh comments when showing for the first time
-              if (!showComments) {
+              // Only refresh if we don't have any comments yet and we're showing comments
+              if (!showComments && localCommentCount === 0) {
                 setTimeout(() => {
                   commentManager.refreshCommentsFromServer(confession.id);
                 }, 100);
               }
             }}
-            className="flex items-center space-x-2 transition-all duration-150 hover:scale-105 active:scale-95 px-3 py-2 rounded-lg hover:bg-coral-50"
-            style={{ color: 'var(--text-secondary)', willChange: 'transform' }}
+            className="flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20 border border-blue-400/30 hover:border-blue-400/50 text-blue-600 dark:text-blue-400 font-medium shadow-sm hover:shadow-md"
+            style={{ willChange: 'transform' }}
           >
-            <MessageCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              {displayCommentCount} comment{displayCommentCount !== 1 ? 's' : ''} 
-              {showComments ? ' (Hide)' : ' (Show)'}
+            <MessageCircle className="w-5 h-5" />
+            <span className="text-sm font-semibold">
+              {displayCommentCount} comment{displayCommentCount !== 1 ? 's' : ''}
             </span>
           </button>
         </div>

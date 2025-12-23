@@ -95,10 +95,6 @@ export const RATE_LIMITS = {
     maxRequests: process.env.NODE_ENV === 'development' ? 200 : 20, 
     windowMs: process.env.NODE_ENV === 'development' ? 60 * 1000 : 60 * 60 * 1000 
   }, // Dev: 200 per minute, Prod: 20 per hour
-  REACTION: { 
-    maxRequests: process.env.NODE_ENV === 'development' ? 500 : 100, 
-    windowMs: process.env.NODE_ENV === 'development' ? 60 * 1000 : 60 * 60 * 1000 
-  }, // Dev: 500 per minute, Prod: 100 per hour
   REPORT: { 
     maxRequests: process.env.NODE_ENV === 'development' ? 50 : 10, 
     windowMs: process.env.NODE_ENV === 'development' ? 60 * 1000 : 24 * 60 * 60 * 1000 

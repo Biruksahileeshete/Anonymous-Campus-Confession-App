@@ -232,7 +232,6 @@ export default function ConfessionCard({ confession, currentUserId, onUpdate }: 
 
           <ReactionButtons
             confessionId={confession.id}
-            reactions={confession.reaction_counts || {}}
             onUpdate={onUpdate}
           />
         </div>
@@ -242,16 +241,16 @@ export default function ConfessionCard({ confession, currentUserId, onUpdate }: 
           onClick={() => setShowComments(!showComments)}
           className={`flex items-center space-x-3 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
             showComments 
-              ? 'glass-teal text-teal-600' 
-              : 'glass-aurora hover:glass-teal'
+              ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-2 border-blue-400/50 text-blue-600 dark:text-blue-400 shadow-lg' 
+              : 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover:from-blue-500/20 hover:to-purple-500/20 border border-blue-400/30 hover:border-blue-400/50 text-blue-600 dark:text-blue-400 shadow-sm hover:shadow-md'
           }`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           <MessageCircle className="w-5 h-5" />
-          <span>{showComments ? 'Hide' : 'Comments'}</span>
+          <span>Comments</span>
           <motion.span 
-            className="badge-aurora min-w-[24px] h-6 flex items-center justify-center"
+            className="bg-blue-500/20 text-blue-700 dark:text-blue-300 min-w-[24px] h-6 flex items-center justify-center rounded-full text-sm font-bold"
             animate={{ scale: commentCount > 0 ? [1, 1.2, 1] : 1 }}
             transition={{ duration: 0.3 }}
           >

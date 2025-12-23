@@ -21,14 +21,6 @@ export interface Comment {
   createdAt: string;
 }
 
-export interface Reaction {
-  id: string;
-  confessionId: string;
-  userId: string;
-  type: 'like' | 'laugh' | 'sad';
-  createdAt: string;
-}
-
 export interface Report {
   id: string;
   confessionId: string;
@@ -47,12 +39,10 @@ let pool: Pool | null = null;
 let memoryDB: {
   confessions: Confession[];
   comments: Comment[];
-  reactions: Reaction[];
   reports: Report[];
 } = {
   confessions: [],
   comments: [],
-  reactions: [],
   reports: []
 };
 
@@ -90,22 +80,6 @@ function handleInMemoryQuery(sql: string, params: any[]) {
       const confessionId = params[0];
       return memoryDB.comments.filter(c => c.confessionId === confessionId);
     }
-    if (sqlLower.includes('from reactions')) {
-      const [confessionId, userId] = params;
-      return memoryDB.reactions.filter(r => r.confessionId === confessionId && r.userId === userId);
-    }
-    if (sqlLower.includes('count(*)')) {
-      const [confessionId] = params;
-      let count = 0;
-      if (sqlLower.includes("type = 'like'")) {
-        count = memoryDB.reactions.filter(r => r.confessionId === confessionId && r.type === 'like').length;
-      } else if (sqlLower.includes("type = 'laugh'")) {
-        count = memoryDB.reactions.filter(r => r.confessionId === confessionId && r.type === 'laugh').length;
-      } else if (sqlLower.includes("type = 'sad'")) {
-        count = memoryDB.reactions.filter(r => r.confessionId === confessionId && r.type === 'sad').length;
-      }
-      return [{ count }];
-    }
     return [];
   }
   
@@ -121,24 +95,10 @@ function handleInMemoryQuery(sql: string, params: any[]) {
       const [id, confessionId, content, authorId, createdAt] = params;
       const comment: Comment = { id, confessionId, content, authorId, createdAt };
       memoryDB.comments.push(comment);
-    } else if (sqlLower.includes('into reactions')) {
-      const [id, confessionId, userId, type, createdAt] = params;
-      const reaction: Reaction = { id, confessionId, userId, type, createdAt };
-      memoryDB.reactions.push(reaction);
     } else if (sqlLower.includes('into reports')) {
       const [id, confessionId, reportedBy, reason, explanation, createdAt] = params;
       const report: Report = { id, confessionId, reportedBy, reason, explanation, createdAt };
       memoryDB.reports.push(report);
-    }
-    return [];
-  }
-  
-  if (sqlLower.startsWith('delete')) {
-    if (sqlLower.includes('from reactions')) {
-      const [confessionId, userId] = params;
-      memoryDB.reactions = memoryDB.reactions.filter(r => 
-        !(r.confessionId === confessionId && r.userId === userId)
-      );
     }
     return [];
   }
@@ -163,7 +123,6 @@ export async function initDB() {
   // For in-memory storage, just ensure the structure exists
   if (!memoryDB.confessions) memoryDB.confessions = [];
   if (!memoryDB.comments) memoryDB.comments = [];
-  if (!memoryDB.reactions) memoryDB.reactions = [];
   if (!memoryDB.reports) memoryDB.reports = [];
   
   // Add some sample data for demo

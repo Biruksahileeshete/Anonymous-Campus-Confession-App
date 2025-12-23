@@ -142,7 +142,6 @@ export class SimpleDatabase {
         c.content,
         c.created_at,
         c.updated_at,
-        c.reaction_counts,
         u.full_name as author_name,
         (SELECT COUNT(*) FROM comments WHERE confession_id = c.id) as comment_count
       FROM confessions c
@@ -152,17 +151,12 @@ export class SimpleDatabase {
       LIMIT $1 OFFSET $2
     `, [limit, offset]);
     
-    // Parse reaction_counts JSON and ensure proper timestamp format
+    // Ensure proper timestamp format
     return result.rows.map(row => ({
       ...row,
-      reaction_counts: typeof row.reaction_counts === 'string' 
-        ? JSON.parse(row.reaction_counts) 
-        : row.reaction_counts || {},
       comment_count: parseInt(row.comment_count) || 0,
       // Ensure created_at is properly formatted as ISO string
-      created_at: row.created_at instanceof Date 
-        ? row.created_at.toISOString() 
-        : new Date(row.created_at).toISOString()
+      created_at: new Date(row.created_at).toISOString()
     }));
   }
 
@@ -183,14 +177,18 @@ export class SimpleDatabase {
     author_id: string;
   }) {
     try {
-      // Optimized insert with minimal data return
+      // Optimized insert with UTC timestamp and proper data return
       const result = await fastQuery(`
         INSERT INTO comments (confession_id, content, author_id, created_at)
-        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-        RETURNING id, content, created_at
+        VALUES ($1, $2, $3, NOW() AT TIME ZONE 'UTC')
+        RETURNING id, content, created_at, confession_id, author_id
       `, [commentData.confession_id, commentData.content, commentData.author_id]);
       
-      return result.rows[0];
+      const comment = result.rows[0];
+      return {
+        ...comment,
+        created_at: new Date(comment.created_at).toISOString()
+      };
     } catch (error) {
       console.error('Error creating fast comment:', error);
       throw error;
@@ -217,6 +215,8 @@ export class SimpleDatabase {
         c.id,
         c.content,
         c.created_at,
+        c.confession_id,
+        c.author_id,
         'Anonymous' as author_name
       FROM comments c
       WHERE c.confession_id = $1
@@ -224,12 +224,10 @@ export class SimpleDatabase {
       LIMIT 100
     `, [confessionId]);
     
-    // Ensure proper timestamp format for comments
+    // Ensure proper timestamp format for comments (UTC storage, proper formatting)
     return result.rows.map(row => ({
       ...row,
-      created_at: row.created_at instanceof Date 
-        ? row.created_at.toISOString() 
-        : row.created_at
+      created_at: new Date(row.created_at).toISOString()
     }));
   }
 
@@ -243,127 +241,7 @@ export class SimpleDatabase {
     return parseInt(result.rows[0].count);
   }
 
-  async upsertReaction(reactionData: {
-    confession_id: string;
-    user_id: string;
-    type: string;
-  }) {
-    try {
-      // Use INSERT ... ON CONFLICT for atomic upsert
-      const result = await queryNeon(`
-        INSERT INTO reactions (confession_id, user_id, type, created_at)
-        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-        ON CONFLICT (confession_id, user_id, type) 
-        DO UPDATE SET created_at = CURRENT_TIMESTAMP
-        RETURNING *
-      `, [reactionData.confession_id, reactionData.user_id, reactionData.type]);
-      
-      return result.rows[0];
-    } catch (error) {
-      console.error('Error upserting reaction:', error);
-      throw error;
-    }
-  }
 
-  async createReaction(reactionData: {
-    confession_id: string;
-    user_id: string;
-    type: string;
-  }) {
-    try {
-      // Use INSERT ... ON CONFLICT to handle duplicates gracefully
-      const result = await queryNeon(`
-        INSERT INTO reactions (confession_id, user_id, type)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (confession_id, user_id, type) DO NOTHING
-        RETURNING *
-      `, [reactionData.confession_id, reactionData.user_id, reactionData.type]);
-      
-      return result.rows[0];
-    } catch (error) {
-      console.error('Error creating reaction:', error);
-      throw error;
-    }
-  }
-
-  async deleteSpecificReaction(confessionId: string, userId: string, type: string) {
-    try {
-      await queryNeon(`
-        DELETE FROM reactions 
-        WHERE confession_id = $1 AND user_id = $2 AND type = $3
-      `, [confessionId, userId, type]);
-    } catch (error) {
-      console.error('Error deleting reaction:', error);
-      throw error;
-    }
-  }
-
-  async getUserReactions(confessionId: string, userId: string) {
-    const result = await queryNeon(`
-      SELECT type FROM reactions 
-      WHERE confession_id = $1 AND user_id = $2
-    `, [confessionId, userId]);
-    
-    return result.rows.map(row => row.type);
-  }
-
-  async getUserSpecificReaction(confessionId: string, userId: string, type: string) {
-    const result = await queryNeon(`
-      SELECT * FROM reactions 
-      WHERE confession_id = $1 AND user_id = $2 AND type = $3
-    `, [confessionId, userId, type]);
-    
-    return result.rows[0];
-  }
-
-  async updateConfessionReactionCounts(confessionId: string) {
-    try {
-      // Use a more efficient query with aggregation
-      const result = await queryNeon(`
-        WITH reaction_counts AS (
-          SELECT type, COUNT(*) as count
-          FROM reactions 
-          WHERE confession_id = $1
-          GROUP BY type
-        )
-        UPDATE confessions 
-        SET 
-          reaction_counts = COALESCE(
-            (SELECT json_object_agg(type, count) FROM reaction_counts),
-            '{}'::json
-          ),
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1
-        RETURNING reaction_counts
-      `, [confessionId]);
-      
-      return result.rows[0]?.reaction_counts || {};
-    } catch (error) {
-      console.error('Error updating reaction counts:', error);
-      // Fallback to original method
-      const result = await queryNeon(`
-        SELECT type, COUNT(*) as count
-        FROM reactions 
-        WHERE confession_id = $1
-        GROUP BY type
-      `, [confessionId]);
-      
-      const reactionCounts: { [key: string]: number } = {};
-      result.rows.forEach(row => {
-        reactionCounts[row.type] = parseInt(row.count);
-      });
-      
-      await queryNeon(`
-        UPDATE confessions 
-        SET 
-          reaction_counts = $2,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1
-      `, [confessionId, JSON.stringify(reactionCounts)]);
-      
-      return reactionCounts;
-    }
-  }
 
   async createReport(reportData: {
     confession_id: string;

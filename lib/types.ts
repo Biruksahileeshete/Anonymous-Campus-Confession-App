@@ -4,7 +4,6 @@ export interface Confession {
   created_at: string;
   author_id: string;
   is_hidden: boolean;
-  reaction_counts: { [key: string]: number };
   comment_count: number;
 }
 
@@ -16,13 +15,7 @@ export interface Comment {
   created_at: string;
 }
 
-export interface Reaction {
-  id: string;
-  confession_id: string;
-  user_id: string;
-  type: string;
-  created_at: string;
-}
+
 
 export interface Report {
   id: string;

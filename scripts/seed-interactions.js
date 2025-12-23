@@ -19,8 +19,6 @@ const sampleComments = [
   "This is exactly what I needed to read today."
 ];
 
-const reactionEmojis = ['❤️', '👍', '😊', '🙌', '💪', '🌟', '✨', '🔥', '💯', '🎉'];
-
 async function seedInteractions() {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
@@ -41,35 +39,9 @@ async function seedInteractions() {
     console.log(`Found ${confessionIds.length} confessions and ${userIds.length} users`);
 
     // Clear existing interactions
-    await client.query('DELETE FROM reactions');
     await client.query('DELETE FROM comments');
 
-    let reactionsAdded = 0;
     let commentsAdded = 0;
-
-    // Add reactions to confessions
-    for (const confessionId of confessionIds) {
-      // Each confession gets 1-5 random reactions
-      const numReactions = Math.floor(Math.random() * 5) + 1;
-      
-      for (let i = 0; i < numReactions; i++) {
-        const randomUser = userIds[Math.floor(Math.random() * userIds.length)];
-        const randomEmoji = reactionEmojis[Math.floor(Math.random() * reactionEmojis.length)];
-        
-        try {
-          await client.query(`
-            INSERT INTO reactions (confession_id, user_id, type, created_at)
-            VALUES ($1, $2, $3, NOW() - INTERVAL '${Math.floor(Math.random() * 20)} days' - INTERVAL '${Math.floor(Math.random() * 24)} hours')
-          `, [confessionId, randomUser, randomEmoji]);
-          reactionsAdded++;
-        } catch (error) {
-          // Skip if duplicate reaction (same user, same confession, same type)
-          if (!error.message.includes('duplicate')) {
-            console.error('Error adding reaction:', error.message);
-          }
-        }
-      }
-    }
 
     // Add comments to some confessions
     for (const confessionId of confessionIds) {
@@ -91,13 +63,11 @@ async function seedInteractions() {
       }
     }
 
-    console.log(`Successfully added ${reactionsAdded} reactions and ${commentsAdded} comments!`);
+    console.log(`Successfully added ${commentsAdded} comments!`);
     
     // Show summary
-    const reactionCount = await client.query('SELECT COUNT(*) FROM reactions');
     const commentCount = await client.query('SELECT COUNT(*) FROM comments');
     
-    console.log(`Total reactions in database: ${reactionCount.rows[0].count}`);
     console.log(`Total comments in database: ${commentCount.rows[0].count}`);
 
   } catch (error) {

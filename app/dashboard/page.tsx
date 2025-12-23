@@ -50,6 +50,14 @@ export default function UserDashboard() {
       localStorage.clear();
       window.location.replace('/auth');
     }
+
+    // Listen for refresh events
+    const handleRefresh = () => {
+      fetchConfessions();
+    };
+
+    window.addEventListener('aurora:refresh', handleRefresh);
+    return () => window.removeEventListener('aurora:refresh', handleRefresh);
   }, []);
 
   const fetchConfessions = async (page = 0) => {

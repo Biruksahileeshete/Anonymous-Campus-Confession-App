@@ -9,7 +9,7 @@
 
 ## ✨ What is Aurora Confessions?
 
-Aurora Confessions is a modern, full-stack web application designed specifically for campus communities. It provides a safe space where students can anonymously share their thoughts, confessions, and experiences while connecting with their peers. The platform combines complete anonymity with community engagement through reactions, comments, and discussions.
+Aurora Confessions is a modern, full-stack web application designed specifically for campus communities. It provides a safe space where students can anonymously share their thoughts, confessions, and experiences while connecting with their peers through meaningful discussions and comments.
 
 ## 🚀 Live Demo
 
@@ -23,9 +23,9 @@ Aurora Confessions is a modern, full-stack web application designed specifically
 - **Safe Environment**: Community-driven moderation ensures respectful space
 
 ### 💬 Community Engagement
-- **Interactive Reactions**: Express yourself with emoji reactions
 - **Anonymous Comments**: Engage in meaningful discussions
 - **Real-time Updates**: See new confessions and interactions instantly
+- **Community Building**: Connect with peers through shared experiences
 
 ### 🎨 Modern Experience
 - **Aurora Theme**: Stunning gradients with Coral, Teal, Amber & Emerald colors
@@ -75,8 +75,8 @@ Aurora Confessions is a modern, full-stack web application designed specifically
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/Anonymous-Campus-Confession-App.git
-cd Anonymous-Campus-Confession-App
+git clone https://github.com/yourusername/aurora-confessions.git
+cd aurora-confessions
 ```
 
 ### 2. Install Dependencies
@@ -95,48 +95,56 @@ JWT_SECRET="your-super-secret-jwt-key-here"
 NEXTAUTH_SECRET="your-nextauth-secret-here"
 NEXTAUTH_URL="http://localhost:3000"
 
-# Google OAuth (Optional)
+# Optional: Google OAuth
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
 ```
 
 ### 4. Database Setup
 ```bash
-# Run database migrations (if you have them)
-npm run db:migrate
+# Run database migrations
+node scripts/migrate.js
 
-# Or manually create tables using the schema in /scripts
+# Optimize database performance
+node scripts/optimize-performance.js
+
+# Optional: Seed with sample data
+node scripts/seed-interactions.js
 ```
 
-### 5. Performance Optimization
-```bash
-# Create database indexes for optimal performance
-npm run optimize
-```
-
-### 6. Start Development Server
+### 5. Start Development Server
 ```bash
 npm run dev
 ```
 
 Visit `http://localhost:3000` to see your application!
 
-## 🚀 Deployment
+## 🚀 Deployment to Vercel
 
-### Deploy to Vercel (Recommended)
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy automatically on every push
+### Quick Deploy
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/aurora-confessions)
 
 ### Manual Deployment
-```bash
-# Build the application
-npm run build
+1. **Push to GitHub**: Commit your code to a GitHub repository
+2. **Connect to Vercel**: Import your repository in Vercel dashboard
+3. **Environment Variables**: Add your `.env.local` variables in Vercel settings
+4. **Deploy**: Vercel will automatically build and deploy your app
 
-# Start production server
-npm start
+### Environment Variables for Production
+In your Vercel dashboard, add these environment variables:
 ```
+DATABASE_URL=your-neon-database-url
+JWT_SECRET=your-production-jwt-secret
+NEXTAUTH_SECRET=your-production-nextauth-secret
+NEXTAUTH_URL=https://your-app-domain.vercel.app
+```
+
+### Build Configuration
+The app is pre-configured for Vercel deployment with:
+- `vercel.json` for optimal settings
+- Automatic builds on push
+- Edge functions for global performance
+- Built-in SSL certificates
 
 ## 📊 Performance Features
 
@@ -152,14 +160,14 @@ Aurora Confessions is built for speed and scalability:
 ### For Students
 1. **Sign Up**: Create account with student email
 2. **Share**: Post anonymous confessions
-3. **Engage**: React and comment on posts
-4. **Connect**: Build supportive community
+3. **Engage**: Comment on posts and join discussions
+4. **Connect**: Build supportive community connections
 
 ### For Administrators
-1. **Dashboard**: Monitor platform activity
-2. **Moderation**: Review and manage reports
+1. **Dashboard**: Monitor platform activity and statistics
+2. **Moderation**: Review and manage reported content
 3. **User Management**: Handle user roles and permissions
-4. **Analytics**: Track community engagement
+4. **Analytics**: Track community engagement metrics
 
 ## 🤝 Contributing
 
@@ -178,25 +186,23 @@ We welcome contributions! Please follow these steps:
 - Add proper error handling
 - Write meaningful commit messages
 
-## 📝 Scripts
+## 📝 Available Scripts
 
 ```bash
 # Development
 npm run dev          # Start development server
-npm run dev:fast     # Start with turbo and HTTPS
-
-# Building
 npm run build        # Build for production
 npm run start        # Start production server
 
 # Code Quality
 npm run lint         # Run ESLint
 npm run type-check   # TypeScript type checking
-npm run format       # Format code with Prettier
 
-# Database
-npm run optimize     # Create database indexes
-npm run db:optimize  # Analyze database performance
+# Database Management
+node scripts/migrate.js              # Run database migrations
+node scripts/optimize-performance.js # Create database indexes
+node scripts/seed-interactions.js    # Seed sample data
+node scripts/check-database.js       # Verify database setup
 ```
 
 ## 🔧 Configuration
@@ -210,7 +216,8 @@ module.exports = {
       colors: {
         coral: { /* Custom coral shades */ },
         teal: { /* Custom teal shades */ },
-        // ... more colors
+        amber: { /* Custom amber shades */ },
+        emerald: { /* Custom emerald shades */ }
       }
     }
   }
@@ -218,14 +225,15 @@ module.exports = {
 ```
 
 ### Performance Tuning
-Adjust cache settings in `lib/cache.ts`:
+Adjust cache settings in your database configuration:
 ```typescript
-// Cache TTL settings
-const CACHE_SETTINGS = {
-  confessions: 120, // 2 minutes
-  comments: 300,    // 5 minutes
-  reactions: 300,   // 5 minutes
-}
+// Connection pool settings
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000
+});
 ```
 
 ## 🛡️ Security Features
@@ -251,15 +259,15 @@ const CACHE_SETTINGS = {
 
 **Database Connection Issues**
 ```bash
-# Check your DATABASE_URL format
-# Ensure Neon database is accessible
-npm run db:optimize
+# Verify your DATABASE_URL format
+# Test connection with:
+node scripts/check-database.js
 ```
 
 **Slow Performance**
 ```bash
 # Run performance optimization
-npm run optimize
+node scripts/optimize-performance.js
 ```
 
 **Build Errors**
@@ -269,6 +277,11 @@ rm -rf .next
 npm run build
 ```
 
+**Deployment Issues**
+- Ensure all environment variables are set in Vercel
+- Check build logs for specific errors
+- Verify database connectivity from production
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -276,16 +289,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Next.js Team** for the amazing framework
-- **Vercel** for seamless deployment
+- **Vercel** for seamless deployment platform
 - **Neon** for excellent PostgreSQL hosting
-- **Tailwind CSS** for beautiful styling
+- **Tailwind CSS** for beautiful styling system
 - **Campus Communities** for inspiration and feedback
 
-## 📞 Support
+## 📞 Support & Contact
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/Anonymous-Campus-Confession-App/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/Anonymous-Campus-Confession-App/discussions)
-- **Email**: support@auroraconfessions.com
+- **Issues**: [GitHub Issues](https://github.com/yourusername/aurora-confessions/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/aurora-confessions/discussions)
+- **Documentation**: Check the `/docs` folder for detailed guides
 
 ---
 
@@ -294,6 +307,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **🌟 Star this repository if you found it helpful! 🌟**
 
 *Built with ❤️ for campus communities everywhere*
+
+**Ready for Production Deployment** ✅
 
 [⬆ Back to Top](#-aurora-confessions)
 

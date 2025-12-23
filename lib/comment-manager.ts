@@ -4,7 +4,7 @@ import { Comment as LibComment } from '../lib/types';
 
 // Extend your Comment type with optimistic fields
 interface ManagerComment extends LibComment {
-  author_name?: string;  // We'll add this for display purposes
+  author_name?: string;
   isOptimistic?: boolean;
 }
 
@@ -13,6 +13,7 @@ interface CommentState {
     comments: ManagerComment[];
     isLoading: boolean;
     optimisticCount: number;
+    lastFetch: number;
   };
 }
 
@@ -39,29 +40,84 @@ class CommentManager {
   }
 
   initializeComments(confessionId: string, comments: LibComment[]) {
-    // Convert LibComment to ManagerComment with author_name for display
-    const managerComments: ManagerComment[] = comments.map(comment => ({
-      ...comment,
-      author_name: 'Anonymous', // Add display name
-      isOptimistic: false
-    }));
+    // Convert LibComment to ManagerComment with proper sorting (newest first)
+    const managerComments: ManagerComment[] = comments
+      .map(comment => ({
+        ...comment,
+        author_name: 'Anonymous',
+        isOptimistic: false,
+        // Ensure proper UTC date format
+        created_at: new Date(comment.created_at).toISOString()
+      }))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()); // Most recent first
     
     if (!this.state[confessionId]) {
       this.state[confessionId] = {
         comments: [...managerComments],
         isLoading: false,
-        optimisticCount: 0
+        optimisticCount: 0,
+        lastFetch: Date.now()
       };
-      
-      // If no initial comments provided, fetch from server
-      if (comments.length === 0) {
-        this.fetchCommentsFromServer(confessionId);
-      }
     } else {
-      // Update existing comments but keep optimistic ones
+      // CRITICAL: Preserve optimistic comments, don't let server data overwrite them
       const existingOptimistic = this.state[confessionId].comments.filter(c => c.isOptimistic);
-      this.state[confessionId].comments = [...managerComments, ...existingOptimistic];
+      
+      // Merge: optimistic comments first (newest), then server comments (newest first)
+      this.state[confessionId].comments = [...existingOptimistic, ...managerComments];
+      this.state[confessionId].lastFetch = Date.now();
     }
+    
+    // Auto-fetch if no initial comments provided and not recently fetched
+    if (comments.length === 0 && (!this.state[confessionId].lastFetch || Date.now() - this.state[confessionId].lastFetch > 30000)) {
+      this.fetchCommentsFromServer(confessionId);
+    }
+  }
+
+  getState(confessionId: string) {
+    return this.state[confessionId] || {
+      comments: [],
+      isLoading: false,
+      optimisticCount: 0,
+      lastFetch: 0
+    };
+  }
+
+  // Instant comment addition with optimistic update
+  addCommentInstant(confessionId: string, content: string): string {
+    if (!this.state[confessionId]) {
+      this.state[confessionId] = {
+        comments: [],
+        isLoading: false,
+        optimisticCount: 0,
+        lastFetch: 0
+      };
+    }
+
+    const currentState = this.state[confessionId];
+    
+    // Create optimistic comment with unique ID
+    const optimisticId = `optimistic-${Date.now()}-${++this.optimisticId}`;
+    const optimisticComment: ManagerComment = {
+      id: optimisticId,
+      confession_id: confessionId,
+      content: content.trim(),
+      author_id: 'optimistic-user',
+      author_name: 'You',
+      created_at: new Date().toISOString(), // UTC timestamp
+      isOptimistic: true
+    };
+
+    // Add optimistic comment at the beginning (most recent first)
+    currentState.comments.unshift(optimisticComment);
+    currentState.optimisticCount++;
+    
+    // Notify listeners IMMEDIATELY
+    this.notifyListeners(confessionId);
+
+    // Start background sync (non-blocking)
+    this.syncCommentWithServer(confessionId, optimisticId, content);
+
+    return optimisticId;
   }
 
   private async fetchCommentsFromServer(confessionId: string) {
@@ -74,7 +130,7 @@ class CommentManager {
       const response = await fetch(`/api/comments?confessionId=${confessionId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Cache-Control': 'max-age=60'
+          'Cache-Control': 'no-cache'
         }
       });
 
@@ -85,16 +141,21 @@ class CommentManager {
       const serverComments = await response.json();
       
       if (Array.isArray(serverComments) && this.state[confessionId]) {
-        // Convert server comments to manager comments
-        const managerComments: ManagerComment[] = serverComments.map(comment => ({
-          ...comment,
-          author_name: comment.author_name || 'Anonymous',
-          isOptimistic: false
-        }));
+        // Convert server comments to manager comments with proper sorting and UTC dates
+        const managerComments: ManagerComment[] = serverComments
+          .map(comment => ({
+            ...comment,
+            author_name: comment.author_name || 'Anonymous',
+            isOptimistic: false,
+            // Ensure proper UTC date format
+            created_at: new Date(comment.created_at).toISOString()
+          }))
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         
-        // Keep any optimistic comments and merge with server comments
+        // CRITICAL: Keep optimistic comments at the top, don't let server data overwrite them
         const existingOptimistic = this.state[confessionId].comments.filter(c => c.isOptimistic);
-        this.state[confessionId].comments = [...managerComments, ...existingOptimistic];
+        this.state[confessionId].comments = [...existingOptimistic, ...managerComments];
+        this.state[confessionId].lastFetch = Date.now();
         
         // Notify listeners of the update
         this.notifyListeners(confessionId);
@@ -102,51 +163,6 @@ class CommentManager {
     } catch (error) {
       console.error('Failed to fetch comments from server:', error);
     }
-  }
-
-  getState(confessionId: string) {
-    return this.state[confessionId] || {
-      comments: [],
-      isLoading: false,
-      optimisticCount: 0
-    };
-  }
-
-  // Instant comment addition with optimistic update
-  addCommentInstant(confessionId: string, content: string): string {
-    if (!this.state[confessionId]) {
-      this.state[confessionId] = {
-        comments: [],
-        isLoading: false,
-        optimisticCount: 0
-      };
-    }
-
-    const currentState = this.state[confessionId];
-    
-    // Create optimistic comment with unique ID
-    const optimisticId = `optimistic-${Date.now()}-${++this.optimisticId}`;
-    const optimisticComment: ManagerComment = {
-      id: optimisticId,
-      confession_id: confessionId,
-      content: content.trim(),
-      author_id: 'optimistic-user', // Temporary ID
-      author_name: 'You', // Display name for optimistic comment
-      created_at: new Date().toISOString(),
-      isOptimistic: true
-    };
-
-    // Add optimistic comment immediately
-    currentState.comments.push(optimisticComment);
-    currentState.optimisticCount++;
-    
-    // Notify listeners IMMEDIATELY
-    this.notifyListeners(confessionId);
-
-    // Start background sync (non-blocking)
-    this.syncCommentWithServer(confessionId, optimisticId, content);
-
-    return optimisticId;
   }
 
   private async syncCommentWithServer(confessionId: string, optimisticId: string, content: string) {
@@ -183,17 +199,19 @@ class CommentManager {
       if (result.success && result.comment) {
         const state = this.state[confessionId];
         if (state) {
-          // Replace optimistic comment with real one
+          // Replace optimistic comment with real one at the same position
           const index = state.comments.findIndex(c => c.id === optimisticId);
           if (index !== -1) {
-            // Convert the server response to match our ManagerComment structure
             const serverComment: ManagerComment = {
               id: result.comment.id,
               confession_id: confessionId,
               content: result.comment.content,
               author_id: result.comment.author_id || 'anonymous',
-              author_name: 'Anonymous', // Display name
-              created_at: result.comment.created_at || new Date().toISOString(),
+              author_name: 'Anonymous',
+              // Ensure proper UTC date format from server
+              created_at: result.comment.created_at 
+                ? new Date(result.comment.created_at).toISOString()
+                : new Date().toISOString(),
               isOptimistic: false
             };
             
@@ -220,6 +238,14 @@ class CommentManager {
     }
   }
 
+  // Force refresh comments from server
+  async refreshCommentsFromServer(confessionId: string) {
+    if (this.state[confessionId]) {
+      this.state[confessionId].lastFetch = 0; // Reset to force fetch
+    }
+    await this.fetchCommentsFromServer(confessionId);
+  }
+
   // Get total comment count including optimistic ones
   getCommentCount(confessionId: string): number {
     const state = this.state[confessionId];
@@ -237,11 +263,6 @@ class CommentManager {
         }
       });
     }
-  }
-
-  // Force refresh comments from server
-  async refreshCommentsFromServer(confessionId: string) {
-    await this.fetchCommentsFromServer(confessionId);
   }
 
   cleanup(confessionId: string) {
