@@ -13,13 +13,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "echo \"No tests specified\" && exit 0",
-    "optimize": "node scripts/optimize-performance.js",
-    "db:optimize": "node scripts/optimize-performance.js",
-    "deploy": "vercel --prod",
     "db:migrate": "node scripts/migrate.js",
     "db:seed": "node scripts/seed.js",
-    "clean": "rm -rf .next && rm -rf node_modules/.cache",
-    "clear-limits": "node clear-rate-limits.js"
+    "clean": "rm -rf .next && rm -rf node_modules/.cache"
   },
   "dependencies": {
     "@auth/pg-adapter": "^1.11.1",

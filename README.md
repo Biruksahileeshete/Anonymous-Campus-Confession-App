@@ -11,10 +11,6 @@
 
 Aurora Confessions is a modern, full-stack web application designed specifically for campus communities. It provides a safe space where students can anonymously share their thoughts, confessions, and experiences while connecting with their peers through meaningful discussions and comments.
 
-## 🚀 Live Demo
-
-🔗 **[Visit Aurora Confessions](https://your-app-url.vercel.app)** *(Replace with your actual URL)*
-
 ## 🌟 Key Features
 
 ### 🔒 Anonymous Expression
@@ -61,11 +57,6 @@ Aurora Confessions is a modern, full-stack web application designed specifically
 - **Caching**: In-memory cache with TTL
 - **Performance**: Connection pooling with pg
 
-### Infrastructure
-- **Deployment**: Vercel (recommended)
-- **Database**: Neon PostgreSQL
-- **Environment**: Node.js 18+
-
 ## 📦 Installation & Setup
 
 ### Prerequisites
@@ -105,9 +96,6 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 # Run database migrations
 node scripts/migrate.js
 
-# Optimize database performance
-node scripts/optimize-performance.js
-
 # Optional: Seed with sample data
 node scripts/seed-interactions.js
 ```
@@ -118,42 +106,6 @@ npm run dev
 ```
 
 Visit `http://localhost:3000` to see your application!
-
-## 🚀 Deployment to Vercel
-
-### Quick Deploy
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/aurora-confessions)
-
-### Manual Deployment
-1. **Push to GitHub**: Commit your code to a GitHub repository
-2. **Connect to Vercel**: Import your repository in Vercel dashboard
-3. **Environment Variables**: Add your `.env.local` variables in Vercel settings
-4. **Deploy**: Vercel will automatically build and deploy your app
-
-### Environment Variables for Production
-In your Vercel dashboard, add these environment variables:
-```
-DATABASE_URL=your-neon-database-url
-JWT_SECRET=your-production-jwt-secret
-NEXTAUTH_SECRET=your-production-nextauth-secret
-NEXTAUTH_URL=https://your-app-domain.vercel.app
-```
-
-### Build Configuration
-The app is pre-configured for Vercel deployment with:
-- `vercel.json` for optimal settings
-- Automatic builds on push
-- Edge functions for global performance
-- Built-in SSL certificates
-
-## 📊 Performance Features
-
-Aurora Confessions is built for speed and scalability:
-
-- **6x faster** confession loading with optimized queries
-- **10x faster** repeat requests through intelligent caching
-- **50x faster** navigation with browser-level caching
-- **Enterprise-grade** connection pooling and database optimization
 
 ## 🎯 Usage
 
@@ -200,7 +152,6 @@ npm run type-check   # TypeScript type checking
 
 # Database Management
 node scripts/migrate.js              # Run database migrations
-node scripts/optimize-performance.js # Create database indexes
 node scripts/seed-interactions.js    # Seed sample data
 node scripts/check-database.js       # Verify database setup
 ```
@@ -264,23 +215,12 @@ const pool = new Pool({
 node scripts/check-database.js
 ```
 
-**Slow Performance**
-```bash
-# Run performance optimization
-node scripts/optimize-performance.js
-```
-
 **Build Errors**
 ```bash
 # Clear Next.js cache
 rm -rf .next
 npm run build
 ```
-
-**Deployment Issues**
-- Ensure all environment variables are set in Vercel
-- Check build logs for specific errors
-- Verify database connectivity from production
 
 ## 📄 License
 
@@ -289,16 +229,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Next.js Team** for the amazing framework
-- **Vercel** for seamless deployment platform
-- **Neon** for excellent PostgreSQL hosting
 - **Tailwind CSS** for beautiful styling system
 - **Campus Communities** for inspiration and feedback
-
-## 📞 Support & Contact
-
-- **Issues**: [GitHub Issues](https://github.com/yourusername/aurora-confessions/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/aurora-confessions/discussions)
-- **Documentation**: Check the `/docs` folder for detailed guides
 
 ---
 
@@ -307,8 +239,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **🌟 Star this repository if you found it helpful! 🌟**
 
 *Built with ❤️ for campus communities everywhere*
-
-**Ready for Production Deployment** ✅
 
 [⬆ Back to Top](#-aurora-confessions)
 
