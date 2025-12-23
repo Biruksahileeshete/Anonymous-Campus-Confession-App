@@ -145,7 +145,7 @@ function Header({ user, onLogout }: HeaderProps) {
   }, [fastNavigate]);
 
   const handleNotificationClick = useCallback(() => {
-    setUnreadCount(0); // Clear unread count
+    setUnreadCount(0); // Clear unread count immediately
     try { localStorage.setItem('notifications_cache', JSON.stringify({ unreadCount: 0, ts: Date.now() })); } catch {}
     fastNavigate('/notifications');
   }, [fastNavigate]);

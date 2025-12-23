@@ -7,7 +7,6 @@ const pool = new Pool({
   max: 10, // Reduced from 20 to be more conservative
   idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
   connectionTimeoutMillis: 5000, // Increased timeout to 5 seconds
-  acquireTimeoutMillis: 10000, // Wait up to 10 seconds for a connection
   statement_timeout: 30000, // 30 second statement timeout
   query_timeout: 30000, // 30 second query timeout
 });
@@ -221,7 +220,7 @@ export class SimpleDatabase {
         'Anonymous' as author_name
       FROM comments c
       WHERE c.confession_id = $1
-      ORDER BY c.created_at ASC
+      ORDER BY c.created_at DESC
       LIMIT 100
     `, [confessionId]);
     

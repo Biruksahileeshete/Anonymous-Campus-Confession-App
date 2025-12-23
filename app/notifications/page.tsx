@@ -173,21 +173,11 @@ export default function NotificationsPage() {
       <Header user={user} onLogout={handleLogout} />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8">
           <div>
             <h1 className="text-4xl font-bold text-aurora mb-2">📢 Notifications</h1>
             <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>Stay updated with your activity</p>
           </div>
-          <button
-            onClick={fetchNotifications}
-            disabled={loading}
-            className="btn-teal px-6 py-3 rounded-2xl flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0V9a8 8 0 1115.356 2M15 15v5h-.582M8.644 21A8.001 8.001 0 0019.418 15m0 0V15a8 8 0 00-15.356-2" />
-            </svg>
-            <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
         </div>
 
         {loading ? (

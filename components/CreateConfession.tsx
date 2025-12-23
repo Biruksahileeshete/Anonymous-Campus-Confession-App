@@ -68,7 +68,7 @@ export default function CreateConfession({ onSuccess }: CreateConfessionProps) {
 
   return (
     <motion.div 
-      className="card-aurora group relative overflow-hidden"
+      className="card-aurora group relative overflow-hidden p-8 md:p-12"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
@@ -90,11 +90,12 @@ export default function CreateConfession({ onSuccess }: CreateConfessionProps) {
         </p>
       </motion.div>
       
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 }}
+          className="px-4"
         >
           <label className="block font-bold mb-4 text-xl text-aurora">
             🌌 Your Confession
@@ -104,14 +105,14 @@ export default function CreateConfession({ onSuccess }: CreateConfessionProps) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="What constellation of thoughts would you like to share? Pour your heart out... every word is a star in our digital aurora. ✨"
-              className="input-aurora w-full h-48 resize-none text-lg"
+              className="input-aurora w-full h-48 resize-none text-lg p-6"
               maxLength={1000}
             />
 
           </div>
           
           <motion.div 
-            className="flex items-center justify-between mt-4"
+            className="flex items-center justify-between mt-4 px-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -123,6 +124,9 @@ export default function CreateConfession({ onSuccess }: CreateConfessionProps) {
               <span className="font-medium">
                 Spread kindness and create magic in our community
               </span>
+            </div>
+            <div className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
+              {content.length}/1000 characters
             </div>
           </motion.div>
         </motion.div>
