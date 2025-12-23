@@ -201,12 +201,13 @@ function Header({ user, onLogout }: HeaderProps) {
                 </motion.button>
                 
                 {/* Notifications Button */}
-                <motion.div className="relative notification-container">
+                <motion.div className="relative notification-container overflow-visible">
                   <motion.button
                     onClick={handleNotificationClick}
-                    className="glass-teal p-3 rounded-2xl hover:scale-105 transition-all duration-300 group"
+                    className="glass-teal p-3 rounded-2xl hover:scale-105 transition-all duration-300 group relative overflow-visible"
                     title="Notifications"
                     whileTap={{ scale: 0.95 }}
+                    style={{ overflow: 'visible' }}
                   >
                     <Bell className="w-5 h-5 text-teal-600 group-hover:text-teal-700" />
                   </motion.button>
@@ -219,6 +220,12 @@ function Header({ user, onLogout }: HeaderProps) {
                         exit={{ scale: 0, opacity: 0 }}
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
                         className="notification-badge"
+                        style={{ 
+                          position: 'absolute',
+                          top: '-10px',
+                          right: '-10px',
+                          zIndex: 9999
+                        }}
                       >
                         <div className="notification-badge-inner">
                           {unreadCount > 99 ? '99+' : unreadCount}
@@ -314,7 +321,7 @@ function Header({ user, onLogout }: HeaderProps) {
                   handleNotificationClick();
                   setIsMenuOpen(false);
                 }}
-                className="w-full glass-amber px-6 py-4 rounded-2xl text-left font-medium"
+                className="w-full glass-amber px-6 py-4 rounded-2xl text-left font-medium relative overflow-visible"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -324,9 +331,11 @@ function Header({ user, onLogout }: HeaderProps) {
                     <span style={{ color: 'var(--text-primary)' }}>Notifications</span>
                   </div>
                   {unreadCount > 0 && (
-                    <span className="badge-aurora text-xs">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
+                    <div className="relative">
+                      <span className="notification-badge-inner inline-flex items-center justify-center">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    </div>
                   )}
                 </div>
               </motion.button>

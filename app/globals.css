@@ -362,21 +362,42 @@ body {
 .notification-badge-inner {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
   color: white !important;
-  font-weight: bold !important;
+  font-weight: 900 !important;
   border-radius: 50% !important;
-  border: 2px solid white !important;
+  border: 3px solid white !important;
   box-shadow: 
-    0 6px 20px rgba(239, 68, 68, 0.6), 
-    0 4px 8px rgba(0, 0, 0, 0.3), 
-    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-  min-width: 24px !important;
-  height: 24px !important;
+    0 8px 25px rgba(239, 68, 68, 0.8), 
+    0 6px 12px rgba(0, 0, 0, 0.4), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(239, 68, 68, 0.6) !important;
+  min-width: 28px !important;
+  height: 28px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 12px !important;
+  font-size: 14px !important;
   line-height: 1 !important;
-  padding: 0 6px !important;
+  padding: 0 8px !important;
+  animation: pulse-glow 2s infinite !important;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 8px 25px rgba(239, 68, 68, 0.8), 
+      0 6px 12px rgba(0, 0, 0, 0.4), 
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 0 20px rgba(239, 68, 68, 0.6);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 
+      0 10px 30px rgba(239, 68, 68, 1), 
+      0 8px 16px rgba(0, 0, 0, 0.5), 
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 0 30px rgba(239, 68, 68, 0.9);
+  }
 }
 
 /* Ensure parent containers don't clip badges */
@@ -388,14 +409,38 @@ body {
 [data-theme="dark"] .notification-badge-inner {
   border-color: var(--bg-primary) !important;
   box-shadow: 
-    0 6px 20px rgba(239, 68, 68, 0.8), 
-    0 4px 8px rgba(0, 0, 0, 0.5), 
-    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    0 10px 30px rgba(239, 68, 68, 1), 
+    0 8px 16px rgba(0, 0, 0, 0.6), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 0 25px rgba(239, 68, 68, 0.8) !important;
 }
 
 /* Fast Navigation & Cool Animations */
 * {
   transition: all 0.15s ease;
+}
+
+/* Enhanced Reaction Button Styles */
+.reaction-button-active {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
+  border: 2px solid #60a5fa !important;
+  box-shadow: 
+    0 8px 25px rgba(59, 130, 246, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.05) !important;
+}
+
+.reaction-button-inactive {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.reaction-button-inactive:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  transform: scale(1.1) !important;
 }
 
 @keyframes slideInUp {

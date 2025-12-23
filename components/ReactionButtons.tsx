@@ -127,17 +127,17 @@ export default function ReactionButtons({
     const isActive = reactionState?.userReactions.includes(emoji) || false;
     const isPending = reactionState?.isPending(emoji) || false;
     
-    let baseClass = "flex items-center space-x-1 px-3 py-2 rounded-full transition-all duration-150 text-sm font-medium backdrop-blur-sm transform hover:scale-105 active:scale-95";
+    let baseClass = "flex items-center space-x-2 px-4 py-3 rounded-full transition-all duration-200 text-base font-semibold backdrop-blur-sm transform hover:scale-110 active:scale-95 shadow-lg";
     
     if (isPending) {
       baseClass += " opacity-70 animate-pulse";
     }
     
     if (isActive) {
-      return `${baseClass} bg-blue-500/30 text-blue-200 border border-blue-400/50 shadow-lg`;
+      return `${baseClass} bg-gradient-to-r from-blue-500/40 to-purple-500/40 text-white border-2 border-blue-400/70 shadow-xl ring-2 ring-blue-300/50`;
     }
     
-    return `${baseClass} border transition-all duration-150 hover:scale-105`;
+    return `${baseClass} bg-white/10 hover:bg-white/20 border-2 border-white/30 hover:border-white/50 text-white/90 hover:text-white`;
   };
 
   // Use optimized counts from reaction manager or fallback to props
@@ -147,7 +147,7 @@ export default function ReactionButtons({
   return (
     <div className="space-y-3">
       {/* Reaction summary */}
-      <div className="flex items-center flex-wrap gap-2">
+      <div className="flex items-center flex-wrap gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
         {Object.entries(displayCounts).map(([emoji, count]) => {
           if (count === 0) return null;
           
@@ -158,8 +158,8 @@ export default function ReactionButtons({
               className={getButtonClass(emoji)}
               style={{ willChange: 'transform' }}
             >
-              <span className="text-lg">{emoji}</span>
-              <span>{count}</span>
+              <span className="text-2xl">{emoji}</span>
+              <span className="font-bold text-lg">{count}</span>
             </button>
           );
         })}
@@ -167,15 +167,10 @@ export default function ReactionButtons({
         {/* Add reaction button */}
         <button
           onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          className="flex items-center space-x-1 px-3 py-2 rounded-full border transition-all duration-150 text-sm font-medium backdrop-blur-sm hover:scale-105 active:scale-95"
-          style={{ 
-            willChange: 'transform',
-            backgroundColor: 'var(--bg-glass)',
-            borderColor: 'var(--border-primary)',
-            color: 'var(--text-secondary)'
-          }}
+          className="flex items-center space-x-2 px-4 py-3 rounded-full border-2 transition-all duration-200 text-base font-semibold backdrop-blur-sm hover:scale-110 active:scale-95 shadow-lg bg-gradient-to-r from-coral-500/30 to-teal-500/30 hover:from-coral-500/40 hover:to-teal-500/40 border-coral-400/50 hover:border-coral-400/70 text-white"
+          style={{ willChange: 'transform' }}
         >
-          <span>➕</span>
+          <span className="text-xl">➕</span>
           <span>React</span>
         </button>
       </div>
