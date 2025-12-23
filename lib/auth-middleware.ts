@@ -21,14 +21,37 @@ export async function authenticateToken(request: NextRequest) {
 
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      console.error('JWT_SECRET environment variable is not set');
-      return { error: 'Server configuration error', status: 500 };
+      console.error('JWT_SECRET environment variable is not set in production');
+      return { error: 'Server configuration error - JWT_SECRET missing', status: 500 };
     }
 
-    const decoded = jwt.verify(token, jwtSecret) as any;
+    let decoded;
+    try {
+      decoded = jwt.verify(token, jwtSecret) as any;
+    } catch (jwtError) {
+      console.error('JWT verification failed:', jwtError);
+      if (jwtError instanceof jwt.JsonWebTokenError) {
+        return { error: 'Invalid token format', status: 401 };
+      }
+      if (jwtError instanceof jwt.TokenExpiredError) {
+        return { error: 'Token expired', status: 401 };
+      }
+      return { error: 'Token verification failed', status: 401 };
+    }
+
+    if (!decoded.userId) {
+      return { error: 'Invalid token payload', status: 401 };
+    }
 
     // Get fresh user data
-    const user = await simpleDb.getUserById(decoded.userId);
+    let user;
+    try {
+      user = await simpleDb.getUserById(decoded.userId);
+    } catch (dbError) {
+      console.error('Database error when fetching user:', dbError);
+      return { error: 'Database connection error', status: 500 };
+    }
+
     if (!user) {
       return { error: 'User not found', status: 401 };
     }
@@ -48,14 +71,8 @@ export async function authenticateToken(request: NextRequest) {
       }
     };
   } catch (error) {
-    console.error('Token verification error:', error);
-    if (error instanceof jwt.JsonWebTokenError) {
-      return { error: 'Invalid token', status: 401 };
-    }
-    if (error instanceof jwt.TokenExpiredError) {
-      return { error: 'Token expired', status: 401 };
-    }
-    return { error: 'Authentication failed', status: 401 };
+    console.error('Authentication error:', error);
+    return { error: 'Authentication failed', status: 500 };
   }
 }
 

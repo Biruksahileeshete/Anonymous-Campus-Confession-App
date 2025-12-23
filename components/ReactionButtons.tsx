@@ -38,11 +38,8 @@ export default function ReactionButtons({
 
   // Initialize reaction manager and subscribe to changes
   useEffect(() => {
-    // Initialize with current data
+    // Initialize with current data first
     reactionManager.initializeConfession(confessionId, [], reactions);
-    
-    // Fetch user reactions and update state
-    fetchUserReactions();
     
     // Subscribe to changes
     const unsubscribe = reactionManager.subscribe(confessionId, () => {
@@ -52,46 +49,61 @@ export default function ReactionButtons({
       }
     });
 
-    // Get initial state
-    const initialState = reactionManager.getState(confessionId);
-    if (initialState) {
-      setReactionState(initialState);
-    }
+    // Fetch user reactions and update state
+    const fetchAndUpdate = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token || token === 'null') {
+          // Set initial state even without token
+          const initialState = reactionManager.getState(confessionId);
+          if (initialState) {
+            setReactionState(initialState);
+          }
+          return;
+        }
+
+        const response = await fetch(`/api/reactions?confessionId=${confessionId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          const userReactions = data.userReactions || [];
+          
+          // Re-initialize with fetched user reactions
+          reactionManager.initializeConfession(confessionId, userReactions, reactions);
+          
+          // Update local state immediately
+          const state = reactionManager.getState(confessionId);
+          if (state) {
+            setReactionState(state);
+          }
+        } else {
+          // Even if fetch fails, show the initial state
+          const initialState = reactionManager.getState(confessionId);
+          if (initialState) {
+            setReactionState(initialState);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to fetch user reactions:', error);
+        // Show initial state even on error
+        const initialState = reactionManager.getState(confessionId);
+        if (initialState) {
+          setReactionState(initialState);
+        }
+      }
+    };
+
+    fetchAndUpdate();
 
     return () => {
       unsubscribe();
     };
   }, [confessionId, reactions]);
-
-  const fetchUserReactions = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token || token === 'null') return;
-
-      const response = await fetch(`/api/reactions?confessionId=${confessionId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const userReactions = data.userReactions || [];
-        
-        // Initialize reaction manager with fetched data
-        reactionManager.initializeConfession(confessionId, userReactions, reactions);
-        
-        // Update local state
-        const state = reactionManager.getState(confessionId);
-        if (state) {
-          setReactionState(state);
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to fetch user reactions:', error);
-    }
-  };
 
   const handleReaction = useCallback(async (emoji: string) => {
     if (!emoji?.trim()) return;

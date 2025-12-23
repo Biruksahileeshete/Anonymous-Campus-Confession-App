@@ -54,11 +54,13 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.error('No token found');
+        console.error('No token found - redirecting to auth');
+        alert('Please log in to access admin panel');
         window.location.href = '/auth';
         return;
       }
 
+      console.log('Fetching admin stats with token...');
       const response = await fetch('/api/admin/stats', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -66,22 +68,43 @@ export default function AdminDashboard() {
         }
       });
 
-      if (response.status === 401 || response.status === 403) {
-        console.error('Admin access denied');
+      console.log('Admin stats response status:', response.status);
+
+      if (response.status === 401) {
+        console.error('Unauthorized - token invalid');
+        alert('Your session has expired. Please log in again.');
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         window.location.href = '/auth';
         return;
       }
 
+      if (response.status === 403) {
+        console.error('Forbidden - not admin');
+        alert('Admin access required. You will be redirected to the dashboard.');
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      if (response.status === 500) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Server error:', errorData);
+        alert('Server configuration error. Please contact support.');
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
+        console.log('Admin stats loaded successfully:', data);
         setStats(data);
       } else {
         console.error('Failed to fetch stats:', response.status, response.statusText);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        alert(`Failed to load admin data: ${response.status} - ${errorText}`);
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      alert('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
