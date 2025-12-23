@@ -71,77 +71,74 @@ export default function OptimizedConfessionCard({
       className="card-aurora hover-lift"
       style={{ willChange: 'transform' }}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Main Content - Left Side */}
-        <div className="lg:col-span-3 space-y-4 p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2" style={{ color: 'var(--text-secondary)' }}>
-              <Clock className="w-4 h-4" />
-              <span className="text-sm">{formatTime(confession.created_at)}</span>
-            </div>
-            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-              #{confession.id.slice(-6)}
-            </div>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2" style={{ color: 'var(--text-secondary)' }}>
+            <Clock className="w-4 h-4" />
+            <span className="text-sm">{formatTime(confession.created_at)}</span>
           </div>
-
-          {/* Content */}
-          <div className="leading-relaxed whitespace-pre-wrap text-lg" style={{ color: 'var(--text-primary)' }}>
-            {confession.content}
-          </div>
-
-          {/* Reactions */}
-          <ReactionButtons
-            confessionId={confession.id}
-            reactions={confession.reaction_counts}
-            onUpdate={onUpdate || (() => {})}
-          />
-
-          {/* Comment Toggle */}
-          <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'var(--border-primary)' }}>
-            <button
-              onClick={() => setShowComments(!showComments)}
-              className="flex items-center space-x-2 transition-all duration-150 hover:scale-105 active:scale-95 px-3 py-2 rounded-lg hover:bg-coral-50"
-              style={{ color: 'var(--text-secondary)', willChange: 'transform' }}
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                {displayCommentCount} comment{displayCommentCount !== 1 ? 's' : ''} 
-                {showComments ? ' (Hide)' : ' (Show)'}
-              </span>
-            </button>
+          <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+            #{confession.id.slice(-6)}
           </div>
         </div>
 
-        {/* Comments Section - Right Side - Always Visible */}
-        <div className="lg:col-span-1 border-l lg:border-l lg:border-t-0 border-t" style={{ borderColor: 'var(--border-primary)' }}>
-          <div className="p-4 h-full">
-            <div className="flex items-center space-x-2 mb-4" style={{ color: 'var(--text-secondary)' }}>
-              <MessageCircle className="w-4 h-4" />
-              <span className="text-sm font-semibold">Comments</span>
+        {/* Content */}
+        <div className="leading-relaxed whitespace-pre-wrap text-lg" style={{ color: 'var(--text-primary)' }}>
+          {confession.content}
+        </div>
+
+        {/* Reactions */}
+        <ReactionButtons
+          confessionId={confession.id}
+          reactions={confession.reaction_counts}
+          onUpdate={onUpdate || (() => {})}
+        />
+
+        {/* Comment Toggle */}
+        <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'var(--border-primary)' }}>
+          <button
+            onClick={() => {
+              setShowComments(!showComments);
+              // Force refresh comments when showing for the first time
+              if (!showComments) {
+                setTimeout(() => {
+                  commentManager.refreshCommentsFromServer(confession.id);
+                }, 100);
+              }
+            }}
+            className="flex items-center space-x-2 transition-all duration-150 hover:scale-105 active:scale-95 px-3 py-2 rounded-lg hover:bg-coral-50"
+            style={{ color: 'var(--text-secondary)', willChange: 'transform' }}
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {displayCommentCount} comment{displayCommentCount !== 1 ? 's' : ''} 
+              {showComments ? ' (Hide)' : ' (Show)'}
+            </span>
+          </button>
+        </div>
+
+        {/* Comments Section - Full Width */}
+        {showComments && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="border-t pt-6"
+            style={{ borderColor: 'var(--border-primary)' }}
+          >
+            <div className="flex items-center space-x-2 mb-6" style={{ color: 'var(--text-secondary)' }}>
+              <MessageCircle className="w-5 h-5" />
+              <span className="text-lg font-semibold">Comments</span>
             </div>
             
-            {showComments ? (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              >
-                <OptimizedCommentSection
-                  confessionId={confession.id}
-                  onCommentAdded={handleCommentAdded}
-                />
-              </motion.div>
-            ) : (
-              <div className="text-center py-8" style={{ color: 'var(--text-tertiary)' }}>
-                <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">Click "Show" to view and add comments</p>
-                <p className="text-xs mt-1">{displayCommentCount} comment{displayCommentCount !== 1 ? 's' : ''}</p>
-              </div>
-            )}
-          </div>
-        </div>
+            <OptimizedCommentSection
+              confessionId={confession.id}
+              onCommentAdded={handleCommentAdded}
+            />
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );

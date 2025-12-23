@@ -1,12 +1,20 @@
 import { Pool, Client } from 'pg';
 
-// Connection pool for better performance
+// Connection pool for better performance with improved error handling
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-  max: 20, // Maximum number of connections
+  max: 10, // Reduced from 20 to be more conservative
   idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
-  connectionTimeoutMillis: 2000, // Return error after 2 seconds if connection cannot be established
+  connectionTimeoutMillis: 5000, // Increased timeout to 5 seconds
+  acquireTimeoutMillis: 10000, // Wait up to 10 seconds for a connection
+  statement_timeout: 30000, // 30 second statement timeout
+  query_timeout: 30000, // 30 second query timeout
+});
+
+// Handle pool errors
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
 });
 
 // Simple connection function for Neon (legacy support)
@@ -14,32 +22,75 @@ export async function connectToNeon() {
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
+    statement_timeout: 30000,
+    query_timeout: 30000,
   });
   
   await client.connect();
   return client;
 }
 
-// Optimized query function using connection pool
+// Optimized query function using connection pool with retry logic
 export async function queryNeon(text: string, params?: any[]) {
-  const client = await pool.connect();
+  let client;
+  let retries = 3;
   
-  try {
-    const result = await client.query(text, params);
-    return result;
-  } finally {
-    client.release(); // Return connection to pool instead of closing
+  while (retries > 0) {
+    try {
+      client = await pool.connect();
+      const result = await client.query(text, params);
+      return result;
+    } catch (error: any) {
+      console.error(`Query error (${retries} retries left):`, {
+        error: error.message,
+        code: error.code,
+        query: text.substring(0, 100) + '...'
+      });
+      
+      // If it's a connection error, retry
+      if (error.code === 'ECONNRESET' || error.code === 'ENOTFOUND' || error.message.includes('Connection terminated')) {
+        retries--;
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+          continue;
+        }
+      }
+      
+      throw error;
+    } finally {
+      if (client) {
+        client.release(); // Return connection to pool instead of closing
+      }
+    }
   }
 }
 
-// Fast query function for simple queries
+// Fast query function for simple queries with retry logic
 export async function fastQuery(text: string, params?: any[]) {
-  try {
-    const result = await pool.query(text, params);
-    return result;
-  } catch (error) {
-    console.error('Fast query error:', error);
-    throw error;
+  let retries = 3;
+  
+  while (retries > 0) {
+    try {
+      const result = await pool.query(text, params);
+      return result;
+    } catch (error: any) {
+      console.error(`Fast query error (${retries} retries left):`, {
+        error: error.message,
+        code: error.code,
+        query: text.substring(0, 100) + '...'
+      });
+      
+      // If it's a connection error, retry
+      if (error.code === 'ECONNRESET' || error.code === 'ENOTFOUND' || error.message.includes('Connection terminated')) {
+        retries--;
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+          continue;
+        }
+      }
+      
+      throw error;
+    }
   }
 }
 

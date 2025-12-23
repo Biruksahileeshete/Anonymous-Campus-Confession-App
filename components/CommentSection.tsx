@@ -1,48 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Comment } from '../lib/types';
+import { useState } from 'react';
+import { Comment as LibComment } from '../lib/types';
+import { useInstantComments } from '../lib/use-instant-comments';
 
 interface CommentSectionProps {
   confessionId: string;
+  initialComments?: LibComment[];
   onCommentAdded?: () => void;
 }
 
-export default function CommentSection({ confessionId, onCommentAdded }: CommentSectionProps) {
-  const [comments, setComments] = useState<Comment[]>([]);
+export default function CommentSection({ confessionId, initialComments = [], onCommentAdded }: CommentSectionProps) {
   const [newComment, setNewComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchComments();
-  }, [confessionId]);
-
-  const fetchComments = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/comments?confessionId=${confessionId}`, {
-        headers: token ? {
-          'Authorization': `Bearer ${token}`
-        } : {}
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setComments(data);
-      }
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
+  // Use the instant comments hook
+  const { comments, addComment, isLoading } = useInstantComments(
+    confessionId, 
+    initialComments
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted!', { newComment, isSubmitting });
     
-    if (!newComment.trim() || isSubmitting) {
-      console.log('Submission blocked:', { hasContent: !!newComment.trim(), isSubmitting });
+    if (!newComment.trim() || isLoading) {
       return;
     }
 
@@ -51,51 +31,22 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
       alert('Please log in to comment');
       return;
     }
-
-    setIsSubmitting(true);
-    console.log('Starting comment submission...');
     
     try {
-      const response = await fetch('/api/comments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          confessionId,
-          content: newComment.trim(),
-        }),
-      });
-
-      console.log('API response:', response.status, response.ok);
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Comment posted successfully:', result);
-        setNewComment('');
-        fetchComments(); // Refresh comments
-        onCommentAdded?.(); // Update comment count in parent
-      } else {
-        const errorData = await response.json();
-        console.error('API error:', errorData);
-        alert(errorData.error || 'Failed to post comment');
-      }
+      // Use the addComment from the hook (this does optimistic update)
+      addComment(newComment.trim());
+      setNewComment('');
+      onCommentAdded?.(); // Update comment count in parent
     } catch (error) {
       console.error('Error posting comment:', error);
       alert('An error occurred while posting comment');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const formatDate = (dateString: string | Date) => {
-    // Handle both string and Date objects from database
     const date = new Date(dateString);
     
-    // Check if date is valid
     if (isNaN(date.getTime())) {
-      console.error('Invalid date:', dateString);
       return 'Unknown time';
     }
     
@@ -105,7 +56,6 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
     const diffInHours = Math.floor(diffInMinutes / 60);
     const diffInDays = Math.floor(diffInHours / 24);
     
-    // Handle future dates (shouldn't happen but just in case)
     if (diffInMs < 0) {
       return 'Just now';
     }
@@ -115,21 +65,12 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInDays < 7) return `${diffInDays}d ago`;
     
-    // Show full date for older comments
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
     });
   };
-
-  if (isLoading) {
-    return (
-      <div className="text-center py-4">
-        <div className="loading-aurora mx-auto"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -151,18 +92,10 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
               </span>
               <button
                 type="submit"
-                disabled={!newComment.trim() || isSubmitting}
+                disabled={!newComment.trim() || isLoading}
                 className="btn-comment-aurora"
-                onClick={(e) => {
-                  console.log('Button clicked!', { hasContent: !!newComment.trim(), isSubmitting });
-                  if (!newComment.trim() || isSubmitting) {
-                    e.preventDefault();
-                    return;
-                  }
-                  // Let form submission handle the rest
-                }}
               >
-                {isSubmitting ? (
+                {isLoading ? (
                   <span className="flex items-center gap-2">
                     <div className="loading-aurora w-4 h-4"></div>
                     Posting...
@@ -189,16 +122,28 @@ export default function CommentSection({ confessionId, onCommentAdded }: Comment
       ) : (
         <div className="space-y-4">
           {comments.map((comment) => (
-            <div key={comment.id} className="glass-aurora p-4 rounded-2xl">
+            <div 
+              key={comment.id} 
+              className={`glass-aurora p-4 rounded-2xl ${comment.isOptimistic ? 'opacity-70' : ''}`}
+            >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">A</span>
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                    comment.isOptimistic 
+                      ? 'bg-gradient-to-br from-yellow-500 to-orange-500' 
+                      : 'bg-gradient-to-br from-emerald-500 to-teal-500'
+                  }`}>
+                    <span className="text-white text-sm font-bold">
+                      {comment.isOptimistic ? 'Y' : 'A'}
+                    </span>
                   </div>
                   <div>
-                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Anonymous</span>
+                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {comment.author_name || 'Anonymous'}
+                    </span>
                     <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                       {formatDate(comment.created_at)}
+                      {comment.isOptimistic && ' • Sending...'}
                     </div>
                   </div>
                 </div>

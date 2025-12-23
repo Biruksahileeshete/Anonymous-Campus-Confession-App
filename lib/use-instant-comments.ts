@@ -2,17 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { commentManager } from './comment-manager';
+import { Comment as LibComment } from '../lib/types';
 
-interface Comment {
-  id: string;
-  content: string;
-  author_name: string;
-  created_at: string;
+// Create a type that includes the display properties
+interface DisplayComment extends LibComment {
+  author_name?: string;
   isOptimistic?: boolean;
 }
 
-export function useInstantComments(confessionId: string, initialComments: Comment[] = []) {
-  const [comments, setComments] = useState<Comment[]>(initialComments);
+export function useInstantComments(confessionId: string, initialComments: LibComment[] = []) {
+  const [comments, setComments] = useState<DisplayComment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Initialize and subscribe to comment manager
@@ -20,18 +19,18 @@ export function useInstantComments(confessionId: string, initialComments: Commen
     // Initialize with existing comments
     commentManager.initializeComments(confessionId, initialComments);
     
+    // Get initial state
+    const initialState = commentManager.getState(confessionId);
+    setComments([...initialState.comments]);
+    
     // Subscribe to changes
     const unsubscribe = commentManager.subscribe(confessionId, () => {
       const state = commentManager.getState(confessionId);
-      setComments([...state.comments]); // Create new array to trigger re-render
+      setComments([...state.comments]);
     });
 
-    // Set initial state
-    const initialState = commentManager.getState(confessionId);
-    setComments([...initialState.comments]);
-
     return unsubscribe;
-  }, [confessionId, initialComments]);
+  }, [confessionId]);
 
   // Add comment instantly
   const addComment = useCallback((content: string) => {
@@ -40,13 +39,11 @@ export function useInstantComments(confessionId: string, initialComments: Commen
     setIsLoading(true);
     
     try {
-      // This will trigger an immediate UI update
       commentManager.addCommentInstant(confessionId, content.trim());
     } catch (error) {
       console.error('Failed to add comment:', error);
     } finally {
-      // Reset loading state quickly
-      setTimeout(() => setIsLoading(false), 100);
+      setTimeout(() => setIsLoading(false), 300);
     }
   }, [confessionId]);
 
@@ -55,10 +52,23 @@ export function useInstantComments(confessionId: string, initialComments: Commen
     return commentManager.getCommentCount(confessionId);
   }, [confessionId]);
 
+  // Force refresh from manager
+  const refreshComments = useCallback(() => {
+    const state = commentManager.getState(confessionId);
+    setComments([...state.comments]);
+  }, [confessionId]);
+
+  // Force refresh from server
+  const refreshFromServer = useCallback(async () => {
+    await commentManager.refreshCommentsFromServer(confessionId);
+  }, [confessionId]);
+
   return {
     comments,
     addComment,
     getCommentCount,
+    refreshComments,
+    refreshFromServer,
     isLoading
   };
 }
