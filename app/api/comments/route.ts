@@ -4,7 +4,7 @@ import { validateComment, sanitizeInput } from '@/lib/validation';
 import { requireAuth } from '@/lib/auth-middleware';
 import { cache, cacheKeys } from '@/lib/cache';
 
-export const GET = requireAuth(async (request: NextRequest, user: any) => {
+export const GET = async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const confessionId = searchParams.get('confessionId');
@@ -41,7 +41,7 @@ export const GET = requireAuth(async (request: NextRequest, user: any) => {
     console.error('Error fetching comments:', error);
     return NextResponse.json({ error: 'Failed to fetch comments' }, { status: 500 });
   }
-});
+};
 
 export const POST = requireAuth(async (request: NextRequest, user: any) => {
   try {
