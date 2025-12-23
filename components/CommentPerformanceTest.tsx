@@ -53,7 +53,9 @@ export default function CommentPerformanceTest() {
           initialComments={[
             {
               id: 'demo-1',
+              confession_id: testConfessionId,
               content: 'This is a demo comment to show the interface!',
+              author_id: 'demo-user-id',
               author_name: 'Demo User',
               created_at: new Date(Date.now() - 60000).toISOString()
             }
